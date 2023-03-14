@@ -7,7 +7,12 @@ import lombok.Data;
 @Builder
 public class OimUserDto {
 
-    private Long id;
+    private Long usrKey;
+    private String objectId;
     private String empNumber;
+    private String mainBranch;
+    private String tmpBranch;
+    private String startDate;
+    private String endDate;
 
 ***REMOVED***
