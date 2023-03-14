@@ -1,4 +1,4 @@
-package ua.datastech.omnitracker.model.dto;
+package ua.datastech.omnitracker.model.omni.api;
 
 import lombok.Getter;
 
