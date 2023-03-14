@@ -1,10 +1,10 @@
-package ua.datastech.omnitracker.service.tracker;
+package ua.datastech.omnitracker.service.tracker.api;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import ua.datastech.omnitracker.model.dto.OimUserDto;
-import ua.datastech.omnitracker.model.dto.ResponseCodeEnum;
+import ua.datastech.omnitracker.model.omni.api.ResponseCodeEnum;
 
 @Service
 @Slf4j

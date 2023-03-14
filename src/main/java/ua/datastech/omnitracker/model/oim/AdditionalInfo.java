@@ -1,4 +1,4 @@
-package ua.datastech.omnitracker.model.dto;
+package ua.datastech.omnitracker.model.oim;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;

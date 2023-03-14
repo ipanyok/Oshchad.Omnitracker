@@ -1,4 +1,4 @@
-package ua.datastech.omnitracker.service.tracker;
+package ua.datastech.omnitracker.service.tracker.api;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -8,10 +8,10 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import ua.datastech.omnitracker.model.dto.OimClosureRequest;
-import ua.datastech.omnitracker.model.dto.OimPickupRequest;
+import ua.datastech.omnitracker.model.omni.api.OimClosureRequest;
+import ua.datastech.omnitracker.model.omni.api.OimPickupRequest;
 import ua.datastech.omnitracker.model.dto.OimUserDto;
-import ua.datastech.omnitracker.model.dto.ResponseCodeEnum;
+import ua.datastech.omnitracker.model.omni.api.ResponseCodeEnum;
 
 import java.nio.charset.Charset;
 import java.time.LocalDateTime;

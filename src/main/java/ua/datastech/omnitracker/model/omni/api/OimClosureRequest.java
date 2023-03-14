@@ -1,21 +1,19 @@
-package ua.datastech.omnitracker.model.dto;
+package ua.datastech.omnitracker.model.omni.api;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Builder;
 import lombok.Data;
 
-import java.time.LocalDateTime;
-
 @Data
 @Builder
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
-public class OimPickupRequest {
+public class OimClosureRequest {
 
     private String externalID;
     private String objectID;
-    private LocalDateTime externalDeadline;
-    private String responsible;
-    private String responsibleInfo;
+    private ResponseCodeEnum closureCode;
+    private String solution;
+    private String solutionSpecification;
 
 ***REMOVED***

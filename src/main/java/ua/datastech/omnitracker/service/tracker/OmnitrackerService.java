@@ -6,7 +6,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Service;
-import ua.datastech.omnitracker.model.dto.OmniTrackerRequest;
+import ua.datastech.omnitracker.model.oim.OmniTrackerRequest;
 
 import java.sql.PreparedStatement;
 import java.time.LocalDateTime;

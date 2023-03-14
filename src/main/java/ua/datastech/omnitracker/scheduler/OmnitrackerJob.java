@@ -9,8 +9,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ua.datastech.omnitracker.model.dto.OimUserDto;
-import ua.datastech.omnitracker.model.dto.ResponseCodeEnum;
-import ua.datastech.omnitracker.service.tracker.OmnitrackerApiService;
+import ua.datastech.omnitracker.model.omni.api.ResponseCodeEnum;
+import ua.datastech.omnitracker.service.tracker.api.OmnitrackerApiService;
 
 import java.sql.PreparedStatement;
 import java.time.LocalDate;
