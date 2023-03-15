@@ -14,5 +14,7 @@ public class OimUserDto {
     private String tmpBranch;
     private String startDate;
     private String endDate;
+    private Boolean isPickupSent;
+    private Boolean isClosureSent;
 
 ***REMOVED***

@@ -13,6 +13,7 @@ import ua.datastech.omnitracker.model.omni.api.ResponseCodeEnum;
 import ua.datastech.omnitracker.service.tracker.api.OmnitrackerApiService;
 
 import java.sql.PreparedStatement;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -24,20 +25,25 @@ public class OmnitrackerJob {
     private final NamedParameterJdbcTemplate jdbcTemplate;
     private final OmnitrackerApiService omnitrackerApiService;
 
-    @Transactional
-    @Scheduled(cron = "*/10 * * * * *")
+    // todo think about transactions
+//    @Transactional
+    @Scheduled(cron = "*/10 * * * * *") // todo 10 min
     public void saveOmniDataToOIM() {
         List<OimUserDto> omniData = jdbcTemplate.query("select * from OMNI_REQUEST where IS_SAVED = 0 AND IS_PROCESSED = 0", (rs, rowNum) -> OimUserDto.builder()
                 .objectId(rs.getString("OBJECT_ID"))
                 .empNumber(rs.getString("EMP_NO"))
                 .mainBranch(rs.getString("MAINBRANCH"))
                 .tmpBranch(rs.getString("TEMPBRANCH"))
-                .startDate(rs.getString("REBRANCHINGSTARTDATE"))
-                .endDate(rs.getString("REBRANCHINGENDDATE"))
+                .startDate(new SimpleDateFormat("yyyy-MM-dd").format(rs.getDate("REBRANCHINGSTARTDATE")))
+                .endDate(new SimpleDateFormat("yyyy-MM-dd").format(rs.getDate("REBRANCHINGENDDATE")))
+                .isPickupSent(rs.getBoolean("IS_PICKUP_SENT"))
+                .isClosureSent(rs.getBoolean("IS_CLOSURE_SENT"))
                 .build());
 
         omniData.forEach(oimUserDto -> {
-            omnitrackerApiService.callOmniTrackerPickupService(oimUserDto);
+            if (!oimUserDto.getIsPickupSent()) {
+                omnitrackerApiService.callOmniTrackerPickupService(oimUserDto);
+            ***REMOVED***
 
             SqlParameterSource namedParameters = new MapSqlParameterSource()
                     .addValue("empNumber", oimUserDto.getEmpNumber());
@@ -54,7 +60,9 @@ public class OmnitrackerJob {
                         "set IS_PROCESSED = 1 " +
                         "WHERE EMP_NO = :empNumber AND OBJECT_ID = :objectId", params, PreparedStatement::executeUpdate
                 );
-                omnitrackerApiService.callOmniTrackerClosureService(oimUserDto.getObjectId(), oimUserDto.getObjectId(), ResponseCodeEnum.SC_CC_REJECTED, "REJECTED", "User [empNumber=" + oimUserDto.getEmpNumber() + "] wasn't found.");
+                if (!oimUserDto.getIsClosureSent()) {
+                    omnitrackerApiService.callOmniTrackerClosureService(oimUserDto, ResponseCodeEnum.SC_CC_REJECTED, "Відмовлено", "Користувач [empNumber=" + oimUserDto.getEmpNumber() + "] не знайдений в системі ОІМ.");
+                ***REMOVED***
             ***REMOVED*** else {
                 SqlParameterSource namedParametersForUpdate = new MapSqlParameterSource()
                         .addValue("empNumber", oimUserDto.getEmpNumber())
@@ -64,7 +72,7 @@ public class OmnitrackerJob {
                         .addValue("startDate", java.sql.Date.valueOf(oimUserDto.getStartDate()))
                         .addValue("endDate", java.sql.Date.valueOf(oimUserDto.getEndDate()));
                 Integer execute = jdbcTemplate.execute("update usr set " +
-                        "USR_UDF_OBJECT_ID = :objectId, " +
+                        "USR_UDF_OBJECTID = :objectId, " +
                         "USR_UDF_MAINBRANCH = :mainBranch, " +
                         "USR_UDF_TEMPBRANCH = :tmpBranch, " +
                         "USR_UDF_REBRANCHINGSTARTDATE = :startDate, " +
@@ -86,12 +94,12 @@ public class OmnitrackerJob {
     ***REMOVED***
 
     @Transactional
-    @Scheduled(cron = "*/10 * * * * *")
+    @Scheduled(cron = "*/10 * * * * *") // todo 10 min
     public void processRebranching() {
-        List<OimUserDto> rebranchedUsers = jdbcTemplate.query("select USR_KEY, USR_EMP_NO, USR_UDF_OBJECT_ID from usr where USR_UDF_OBJECT_ID is not null", (rs, rowNum) -> OimUserDto.builder()
+        List<OimUserDto> rebranchedUsers = jdbcTemplate.query("select USR_KEY, USR_EMP_NO, USR_UDF_OBJECTID from usr where USR_UDF_OBJECTID is not null", (rs, rowNum) -> OimUserDto.builder()
                 .usrKey(rs.getLong("USR_KEY"))
                 .empNumber(rs.getString("USR_EMP_NO"))
-                .objectId(rs.getString("USR_UDF_OBJECT_ID"))
+                .objectId(rs.getString("USR_UDF_OBJECTID"))
                 .build());
 
         rebranchedUsers.forEach(oimUserDto -> {
@@ -105,13 +113,17 @@ public class OmnitrackerJob {
                     .empNumber(rs.getString("EMP_NO"))
                     .mainBranch(rs.getString("MAINBRANCH"))
                     .tmpBranch(rs.getString("TEMPBRANCH"))
-                    .startDate(rs.getString("REBRANCHINGSTARTDATE"))
-                    .endDate(rs.getString("REBRANCHINGENDDATE"))
+                    .startDate(new SimpleDateFormat("yyyy-MM-dd").format(rs.getDate("REBRANCHINGSTARTDATE")))
+                    .endDate(new SimpleDateFormat("yyyy-MM-dd").format(rs.getDate("REBRANCHINGENDDATE")))
+                    .isPickupSent(rs.getBoolean("IS_PICKUP_SENT"))
+                    .isClosureSent(rs.getBoolean("IS_CLOSURE_SENT"))
                     .build());
 
             omniData.forEach(o -> {
 
-                omnitrackerApiService.callOmniTrackerClosureService(o.getObjectId(), o.getObjectId(), ResponseCodeEnum.SC_CC_RESOLVED, "RESOLVED", "");
+                if (!o.getIsClosureSent()) {
+                    omnitrackerApiService.callOmniTrackerClosureService(o, ResponseCodeEnum.SC_CC_RESOLVED, "Вирішено", "");
+                ***REMOVED***
 
                 jdbcTemplate.execute("update OMNI_REQUEST " +
                         "set IS_PROCESSED = 1 " +
@@ -137,7 +149,7 @@ public class OmnitrackerJob {
             SqlParameterSource namedParametersForUpdate = new MapSqlParameterSource()
                     .addValue("usrKey", oimUserDto.getUsrKey());
             Integer execute = jdbcTemplate.execute("update usr set " +
-                    "USR_UDF_OBJECT_ID = null, " +
+                    "USR_UDF_OBJECTID = null, " +
                     "USR_UDF_MAINBRANCH = null, " +
                     "USR_UDF_TEMPBRANCH = null, " +
                     "USR_UDF_REBRANCHINGSTARTDATE = null, " +
