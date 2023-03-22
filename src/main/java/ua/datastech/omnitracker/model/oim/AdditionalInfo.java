@@ -13,4 +13,8 @@ public class AdditionalInfo {
     private String tmpBranch;
     private String startDate;
     private String endDate;
+
+    private String adLogin;
+    private String action;
+    private String actionDate;
 ***REMOVED***
