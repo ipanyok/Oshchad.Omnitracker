@@ -5,20 +5,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.*;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import ua.datastech.omnitracker.model.dto.OimUserDto;
 import ua.datastech.omnitracker.model.omni.api.OimClosureRequest;
 import ua.datastech.omnitracker.model.omni.api.OimPickupRequest;
 import ua.datastech.omnitracker.model.omni.api.ResponseCodeEnum;
+import ua.datastech.omnitracker.service.jdbc.JdbcQueryService;
 
 import java.nio.charset.StandardCharsets;
-import java.sql.PreparedStatement;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.Collections;
 
 @Profile("prod")
 @Service
@@ -40,46 +38,44 @@ public class OmnitrackerApi implements OmnitrackerApiService {
 
     private final RestTemplate restTemplate;
 
-    private final NamedParameterJdbcTemplate jdbcTemplate;
+    private final JdbcQueryService jdbcQueryService;
 
     @Override
-    public void callOmniTrackerPickupService(OimUserDto oimUserDto) {
-        log.info("call-pickup-ack()... objectId: " + oimUserDto.getObjectId());
-        OimPickupRequest oimPickupRequest = setupOimPickupRequest(oimUserDto.getObjectId(), oimUserDto.getObjectId());
+    public void callOmniTrackerPickupService(String empNumber, String adLogin, String objectId) {
+        log.info("call-pickup-ack()... objectId: " + objectId);
+        OimPickupRequest oimPickupRequest = setupOimPickupRequest(objectId, objectId);
         HttpEntity request = new HttpEntity<>(oimPickupRequest, createHeaders(omniUser, omniPassword));
         ResponseEntity<String> response = restTemplate.postForEntity(omniPickupUrl, request, String.class);
-        if (response.getStatusCode() != HttpStatus.OK  ) {
+        if (response.getStatusCode() != HttpStatus.OK) {
             log.error("Something went wrong. Status: " + response.getStatusCode());
             throw new RuntimeException("Error during send pickup request to omnitracker: " + response.getBody());
         ***REMOVED***
-        SqlParameterSource params = new MapSqlParameterSource()
-                .addValue("empNumber", oimUserDto.getEmpNumber())
-                .addValue("objectId", oimUserDto.getObjectId());
-        jdbcTemplate.execute("update OMNI_REQUEST " +
-                "set IS_PICKUP_SENT = 1 " +
-                "WHERE EMP_NO = :empNumber AND OBJECT_ID = :objectId", params, PreparedStatement::executeUpdate
-        );
-        log.info("Pickup for " + oimUserDto.getObjectId() + " request was sent. Status: " + response.getStatusCode());
+        if (empNumber != null) {
+            jdbcQueryService.updateOmniRequestQuery(empNumber, objectId, Collections.singletonMap("IS_PICKUP_SENT", "1"));
+        ***REMOVED***
+        if (adLogin != null) {
+            jdbcQueryService.updateOmniBlockRequestQuery(adLogin, objectId, Collections.singletonMap("IS_PICKUP_SENT", "1"));
+        ***REMOVED***
+        log.info("Pickup for " + objectId + " request was sent. Status: " + response.getStatusCode());
     ***REMOVED***
 
     @Override
-    public void callOmniTrackerClosureService(OimUserDto oimUserDto, ResponseCodeEnum closureCode, String solution, String solutionSpecification) {
-        log.info("call-closure-req()... objectId: " + oimUserDto.getObjectId());
-        OimClosureRequest oimClosureRequest = setupOimClosureRequest(oimUserDto.getObjectId(), oimUserDto.getObjectId(), closureCode, solution, solutionSpecification);
+    public void callOmniTrackerClosureService(String empNumber, String adLogin, String objectId, ResponseCodeEnum closureCode, String solution, String solutionSpecification) {
+        log.info("call-closure-req()... objectId: " + objectId);
+        OimClosureRequest oimClosureRequest = setupOimClosureRequest(objectId, objectId, closureCode, solution, solutionSpecification);
         HttpEntity request = new HttpEntity<>(oimClosureRequest, createHeaders(omniUser, omniPassword));
         ResponseEntity<String> response = restTemplate.postForEntity(omniClosureUrl, request, String.class);
         if (response.getStatusCode() != HttpStatus.OK) {
             log.error("Something went wrong. Status: " + response.getStatusCode());
             throw new RuntimeException("Error during send closure request to omnitracker: " + response.getBody());
         ***REMOVED***
-        SqlParameterSource params = new MapSqlParameterSource()
-                .addValue("empNumber", oimUserDto.getEmpNumber())
-                .addValue("objectId", oimUserDto.getObjectId());
-        jdbcTemplate.execute("update OMNI_REQUEST " +
-                "set IS_CLOSURE_SENT = 1 " +
-                "WHERE EMP_NO = :empNumber AND OBJECT_ID = :objectId", params, PreparedStatement::executeUpdate
-        );
-        log.info("Closure for " + oimUserDto.getObjectId() + " request was sent. Status: " + response.getStatusCode());
+        if (empNumber != null) {
+            jdbcQueryService.updateOmniRequestQuery(empNumber, objectId, Collections.singletonMap("IS_CLOSURE_SENT", "1"));
+        ***REMOVED***
+        if (adLogin != null) {
+            jdbcQueryService.updateOmniBlockRequestQuery(adLogin, objectId, Collections.singletonMap("IS_CLOSURE_SENT", "1"));
+        ***REMOVED***
+        log.info("Closure for " + objectId + " request was sent. Status: " + response.getStatusCode());
     ***REMOVED***
 
     private HttpHeaders createHeaders(String username, String password) {

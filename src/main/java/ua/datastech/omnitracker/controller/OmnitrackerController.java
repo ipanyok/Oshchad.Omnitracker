@@ -26,4 +26,13 @@ public class OmnitrackerController {
                 .build();
     ***REMOVED***
 
+    @PostMapping(value = "/block/call-dispatch-req", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public OmniTrackerResponse omnitrackerApiBlocking(@RequestBody OmniTrackerRequest request) {
+        log.info("call-dispatch-req()... objectId: " + request.getObjectID());
+        omnitrackerService.saveOmniBlockRequest(request);
+        return OmniTrackerResponse.builder()
+                .externalID(request.getObjectID())
+                .build();
+    ***REMOVED***
+
 ***REMOVED***

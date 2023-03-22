@@ -36,4 +36,20 @@ public class OmnitrackerService {
         ***REMOVED***
     ***REMOVED***
 
+    public void saveOmniBlockRequest(OmniTrackerRequest request) {
+        SqlParameterSource namedParameters = new MapSqlParameterSource()
+                .addValue("objectId", request.getObjectID())
+                .addValue("adLogin", request.getAdditionalInfo().getAdLogin())
+                .addValue("action", request.getAdditionalInfo().getAction())
+                .addValue("actionDate", java.sql.Date.valueOf(request.getAdditionalInfo().getActionDate().substring(0, request.getAdditionalInfo().getActionDate().indexOf("T"))))
+                .addValue("localDate", LocalDateTime.now());
+        Integer execute = jdbcTemplate.execute("insert into OMNI_BLOCK_REQUEST (OBJECT_ID, AD_LOGIN, ACTION, ACTION_DATE, CHANGED_AT) VALUES (:objectId, :adLogin, :action, :actionDate, :localDate)",
+                namedParameters,
+                PreparedStatement::executeUpdate
+        );
+        if (execute != 0) {
+            log.info("Omni block request " + request.getObjectID() + " was saved.");
+        ***REMOVED***
+    ***REMOVED***
+
 ***REMOVED***
