@@ -7,7 +7,6 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import ua.datastech.omnitracker.model.dto.OimUserDto;
 import ua.datastech.omnitracker.model.omni.api.OimClosureRequest;
 import ua.datastech.omnitracker.model.omni.api.OimPickupRequest;
 import ua.datastech.omnitracker.model.omni.api.ResponseCodeEnum;
@@ -17,6 +16,8 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 @Profile("prod")
 @Service
@@ -30,6 +31,9 @@ public class OmnitrackerApi implements OmnitrackerApiService {
     @Value("${omnitracker_pickup_url***REMOVED***")
     private String omniPickupUrl;
 
+    @Value("${omnitracker_attachment_url***REMOVED***")
+    private String omniGetAttachmentUrl;
+
     @Value("${omnitracker_user***REMOVED***")
     private String omniUser;
 
@@ -41,7 +45,7 @@ public class OmnitrackerApi implements OmnitrackerApiService {
     private final JdbcQueryService jdbcQueryService;
 
     @Override
-    public void callOmniTrackerPickupService(String empNumber, String adLogin, String objectId) {
+    public void callOmniTrackerPickupService(String empNumber, String objectId) {
         log.info("call-pickup-ack()... objectId: " + objectId);
         OimPickupRequest oimPickupRequest = setupOimPickupRequest(objectId, objectId);
         HttpEntity request = new HttpEntity<>(oimPickupRequest, createHeaders(omniUser, omniPassword));
@@ -52,15 +56,30 @@ public class OmnitrackerApi implements OmnitrackerApiService {
         ***REMOVED***
         if (empNumber != null) {
             jdbcQueryService.updateOmniRequestQuery(empNumber, objectId, Collections.singletonMap("IS_PICKUP_SENT", "1"));
-        ***REMOVED***
-        if (adLogin != null) {
-            jdbcQueryService.updateOmniBlockRequestQuery(adLogin, objectId, Collections.singletonMap("IS_PICKUP_SENT", "1"));
+        ***REMOVED*** else {
+            jdbcQueryService.updateOmniBlockRequestQuery(objectId, Collections.singletonMap("IS_PICKUP_SENT", "1"));
         ***REMOVED***
         log.info("Pickup for " + objectId + " request was sent. Status: " + response.getStatusCode());
     ***REMOVED***
 
     @Override
-    public void callOmniTrackerClosureService(String empNumber, String adLogin, String objectId, ResponseCodeEnum closureCode, String solution, String solutionSpecification) {
+    public String callOmniTrackerGetAttachmentService(Long oid, String objectId) {
+        log.info("call-get-attachment()... objectId: " + objectId);
+        HttpHeaders headers = createHeaders(omniUser, omniPassword);
+        HttpEntity requestEntity = new HttpEntity<>(headers);
+        Map<String, Long> params = new HashMap<>();
+        params.put("OID", oid);
+        ResponseEntity<String> response = restTemplate.exchange(omniGetAttachmentUrl, HttpMethod.GET, requestEntity, String.class, params);
+        if (response.getStatusCode() != HttpStatus.OK) {
+            log.error("Something went wrong. Status: " + response.getStatusCode());
+            throw new RuntimeException("Error during send gey-attachment request to omnitracker: " + response.getBody());
+        ***REMOVED***
+        log.info("Get-attachment for " + objectId + " request was sent. Status: " + response.getStatusCode());
+        return response.getBody();
+    ***REMOVED***
+
+    @Override
+    public void callOmniTrackerClosureService(String empNumber, String objectId, ResponseCodeEnum closureCode, String solution, String solutionSpecification) {
         log.info("call-closure-req()... objectId: " + objectId);
         OimClosureRequest oimClosureRequest = setupOimClosureRequest(objectId, objectId, closureCode, solution, solutionSpecification);
         HttpEntity request = new HttpEntity<>(oimClosureRequest, createHeaders(omniUser, omniPassword));
@@ -71,9 +90,8 @@ public class OmnitrackerApi implements OmnitrackerApiService {
         ***REMOVED***
         if (empNumber != null) {
             jdbcQueryService.updateOmniRequestQuery(empNumber, objectId, Collections.singletonMap("IS_CLOSURE_SENT", "1"));
-        ***REMOVED***
-        if (adLogin != null) {
-            jdbcQueryService.updateOmniBlockRequestQuery(adLogin, objectId, Collections.singletonMap("IS_CLOSURE_SENT", "1"));
+        ***REMOVED*** else {
+            jdbcQueryService.updateOmniBlockRequestQuery(objectId, Collections.singletonMap("IS_CLOSURE_SENT", "1"));
         ***REMOVED***
         log.info("Closure for " + objectId + " request was sent. Status: " + response.getStatusCode());
     ***REMOVED***

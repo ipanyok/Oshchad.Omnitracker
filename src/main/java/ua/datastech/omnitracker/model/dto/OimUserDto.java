@@ -8,6 +8,7 @@ import lombok.Data;
 public class OimUserDto {
 
     private Long usrKey;
+    private Long id;
     private String objectId;
     private String empNumber;
     private String mainBranch;
@@ -19,5 +20,9 @@ public class OimUserDto {
     private String adLogin;
     private String action;
     private String actionDate;
+    private Long oid;
+    private String fileName;
+    private Long fileSize;
+    private String attachment;
 
 ***REMOVED***
