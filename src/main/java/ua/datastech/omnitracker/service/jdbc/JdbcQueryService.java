@@ -26,11 +26,30 @@ public class JdbcQueryService {
 
     private final static String OMNI_UPDATE_BLOCK_QUERY = "update OMNI_BLOCK_REQUEST " +
             "set %s " +
-            "WHERE AD_LOGIN = :adLogin AND OBJECT_ID = :objectId";
+            "WHERE OBJECT_ID = :objectId";
 
     private final static String OMNI_FIND_ALL_UNPROCESSED_REQUESTS_QUERY = "select * from OMNI_REQUEST where IS_SAVED = 0 AND IS_PROCESSED = 0";
-    private final static String OMNI_FIND_ALL_BLOCK_UNPROCESSED_REQUESTS_QUERY = "select * from OMNI_BLOCK_REQUEST where IS_PROCESSED = 0";
-    private final static String OMNI_FIND_USER_TO_BLOCK_QUERY = "select * from OMNI_BLOCK_REQUEST where IS_PROCESSED = 0 AND ACTION_DATE = :actionDate";
+
+    private final static String OMNI_FIND_ALL_BLOCK_UNPROCESSED_REQUESTS_QUERY = "select * " +
+            "from OMNI_BLOCK_REQUEST B, OMNI_BLOCK_DATA D " +
+            "where B.ID = D.OMNI_BLOCK_REQUEST_ID " +
+            "AND IS_PROCESSED = 0";
+
+    private final static String OMNI_FIND_ALL_BLOCK_ATTACHMENT_QUERY = "select * " +
+            "from OMNI_BLOCK_REQUEST B, OMNI_BLOCK_ATTACHMENT D " +
+            "where B.ID = D.OMNI_BLOCK_REQUEST_ID " +
+            "AND IS_PROCESSED = 0";
+
+
+    private final static String OMNI_FIND_USER_TO_BLOCK_QUERY = "select * " +
+            "from OMNI_BLOCK_REQUEST B, OMNI_BLOCK_DATA D " +
+            "where B.ID = D.OMNI_BLOCK_REQUEST_ID " +
+            "AND IS_PROCESSED = 0 AND ACTION_DATE = :actionDate";
+
+    private final static String OMNI_FIND_USER_TO_BLOCK_ATTACHMENT_QUERY = "select * " +
+            "from OMNI_BLOCK_REQUEST B, OMNI_BLOCK_ATTACHMENT D " +
+            "where B.ID = D.OMNI_BLOCK_REQUEST_ID " +
+            "AND IS_PROCESSED = 0 AND ACTION_DATE = :actionDate";
 
     private final static String OMNI_FIND_ONLY_UNPROCESSED_REQUESTS_QUERY = "select * from OMNI_REQUEST where IS_PROCESSED = 0 and IS_SAVED = 1 and EMP_NO = :empNumber AND OBJECT_ID = :objectId";
 
@@ -44,6 +63,10 @@ public class JdbcQueryService {
             "USR_UDF_REBRANCHINGENDDATE = :endDate " +
             "WHERE USR_EMP_NO = :empNumber";
 
+    private final static String OMNI_UPDATE_ATTACHMENT_QUERY = "update OMNI_BLOCK_ATTACHMENT set " +
+            "ATTACHMENT = :attachment " +
+            "WHERE OMNI_BLOCK_REQUEST_ID = :omniBlockRequestId";
+
     private final static String OIM_FIND_UNPROCESSED_USERS_QUERY = "select USR_KEY, USR_EMP_NO, USR_UDF_OBJECTID from usr where USR_UDF_OBJECTID is not null";
 
     private final static String OIM_FIND_USERS_TO_CLEAN_QUERY = "select USR_KEY, USR_EMP_NO from usr where USR_UDF_REBRANCHINGENDDATE = :endDate";
@@ -55,9 +78,8 @@ public class JdbcQueryService {
         jdbcTemplate.execute(String.format(OMNI_UPDATE_QUERY, convertParamsMapToQueryData(valuesToUpdate)), params, PreparedStatement::executeUpdate);
     ***REMOVED***
 
-    public void updateOmniBlockRequestQuery(String adLogin, String objectId, Map<String, String> valuesToUpdate) {
+    public void updateOmniBlockRequestQuery(String objectId, Map<String, String> valuesToUpdate) {
         SqlParameterSource params = new MapSqlParameterSource()
-                .addValue("adLogin", adLogin)
                 .addValue("objectId", objectId);
         jdbcTemplate.execute(String.format(OMNI_UPDATE_BLOCK_QUERY, convertParamsMapToQueryData(valuesToUpdate)), params, PreparedStatement::executeUpdate);
     ***REMOVED***
@@ -86,11 +108,29 @@ public class JdbcQueryService {
                 .build());
     ***REMOVED***
 
+    public List<OimUserDto> findAllUnprocessedAttachmentsRequests() {
+        return jdbcTemplate.query(OMNI_FIND_ALL_BLOCK_ATTACHMENT_QUERY, (rs, rowNum) -> OimUserDto.builder()
+                .objectId(rs.getString("OBJECT_ID"))
+                .oid(rs.getLong("OID"))
+                .isPickupSent(rs.getBoolean("IS_PICKUP_SENT"))
+                .id(rs.getLong("ID"))
+                .build());
+    ***REMOVED***
+
     public List<OimUserDto> findUsersToBlock(LocalDate date) {
         SqlParameterSource namedParameters = new MapSqlParameterSource()
                 .addValue("actionDate", date);
         return jdbcTemplate.query(OMNI_FIND_USER_TO_BLOCK_QUERY, namedParameters, (rs, rowNum) -> OimUserDto.builder()
                 .adLogin(rs.getString("AD_LOGIN"))
+                .objectId(rs.getString("OBJECT_ID"))
+                .build());
+    ***REMOVED***
+
+    public List<OimUserDto> findAttachment(LocalDate date) {
+        SqlParameterSource namedParameters = new MapSqlParameterSource()
+                .addValue("actionDate", date);
+        return jdbcTemplate.query(OMNI_FIND_USER_TO_BLOCK_ATTACHMENT_QUERY, namedParameters, (rs, rowNum) -> OimUserDto.builder()
+                .attachment(rs.getString("ATTACHMENT"))
                 .objectId(rs.getString("OBJECT_ID"))
                 .build());
     ***REMOVED***
@@ -112,6 +152,13 @@ public class JdbcQueryService {
                 .addValue("startDate", java.sql.Date.valueOf(oimUserDto.getStartDate()))
                 .addValue("endDate", java.sql.Date.valueOf(oimUserDto.getEndDate()));
         return jdbcTemplate.execute(OIM_UPDATE_USER_BY_EMP_NUMBER_QUERY, namedParametersForUpdate, PreparedStatement::executeUpdate);
+    ***REMOVED***
+
+    public Integer updateAttachments(Long objectId, String attachment) {
+        SqlParameterSource namedParametersForUpdate = new MapSqlParameterSource()
+                .addValue("omniBlockRequestId", objectId)
+                .addValue("attachment", attachment);
+        return jdbcTemplate.execute(OMNI_UPDATE_ATTACHMENT_QUERY, namedParametersForUpdate, PreparedStatement::executeUpdate);
     ***REMOVED***
 
     public List<OimUserDto> findOimUnprocessedUsers() {

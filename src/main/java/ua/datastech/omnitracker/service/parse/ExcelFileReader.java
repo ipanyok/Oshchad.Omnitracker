@@ -4,19 +4,20 @@ import lombok.SneakyThrows;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 public class ExcelFileReader {
 
     @SneakyThrows
-    public static void read(String fileLocation) {
-        FileInputStream file = new FileInputStream(new File(fileLocation));
-        Workbook workbook = new XSSFWorkbook(file);
+    public static List<String> read(String attachment) {
+        String attachmentWithoutWrongData = attachment.replaceAll("***REMOVED***r***REMOVED***n", "");
+        byte[] decode = Base64.getDecoder().decode(attachmentWithoutWrongData.getBytes(StandardCharsets.UTF_8));
+        InputStream input = new ByteArrayInputStream(decode);
+
+        Workbook workbook = new XSSFWorkbook(input);
         Sheet sheet = workbook.getSheetAt(0);
 
         Map<Integer, List<String>> data = new HashMap<>();
@@ -48,21 +49,14 @@ public class ExcelFileReader {
             i++;
         ***REMOVED***
         List<String> logins = new ArrayList<>();
-        for (int row = 2; row < sheet.getPhysicalNumberOfRows(); row++) {
-            Cell cell = sheet.getRow(row).getCell(2);
+        for (int row = 6; row < sheet.getPhysicalNumberOfRows(); row++) {
+            Cell cell = sheet.getRow(row).getCell(3);
             if (cell != null && cell.getStringCellValue() != null && !cell.getStringCellValue().equals("")) {
                 logins.add(cell.getStringCellValue());
             ***REMOVED***
         ***REMOVED***
-        System.out.println(logins);
-//        data.entrySet().stream()
-//                .filter(integerListEntry -> integerListEntry.getValue().size() >= 2)
-//                .forEach(entry -> System.out.println(entry.getValue().get(2)));
-    ***REMOVED***
 
-    public static void main(String[] args) {
-        read("d:***REMOVED******REMOVED***test_file.xlsx");
+        return logins;
     ***REMOVED***
-
 
 ***REMOVED***

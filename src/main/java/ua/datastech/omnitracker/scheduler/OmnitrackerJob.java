@@ -29,7 +29,7 @@ public class OmnitrackerJob {
 
         omniData.forEach(oimUserDto -> {
             if (!oimUserDto.getIsPickupSent()) {
-                omnitrackerApiService.callOmniTrackerPickupService(oimUserDto.getEmpNumber(), null, oimUserDto.getObjectId());
+                omnitrackerApiService.callOmniTrackerPickupService(oimUserDto.getEmpNumber(), oimUserDto.getObjectId());
             ***REMOVED***
 
             List<Long> ids = jdbcQueryService.findOimUserByEmpNumber(oimUserDto.getEmpNumber());
@@ -40,7 +40,7 @@ public class OmnitrackerJob {
                 jdbcQueryService.updateOmniRequestQuery(oimUserDto.getEmpNumber(), oimUserDto.getObjectId(), Collections.singletonMap("IS_PROCESSED", "1"));
 
                 if (!oimUserDto.getIsClosureSent()) {
-                    omnitrackerApiService.callOmniTrackerClosureService(oimUserDto.getEmpNumber(), null, oimUserDto.getObjectId(), ResponseCodeEnum.SC_CC_REJECTED, "Відмовлено", "Користувач [empNumber=" + oimUserDto.getEmpNumber() + "] не знайдений в системі ОІМ.");
+                    omnitrackerApiService.callOmniTrackerClosureService(oimUserDto.getEmpNumber(), oimUserDto.getObjectId(), ResponseCodeEnum.SC_CC_REJECTED, "Відмовлено", "Користувач [empNumber=" + oimUserDto.getEmpNumber() + "] не знайдений в системі ОІМ.");
                 ***REMOVED***
             ***REMOVED*** else {
                 Integer updateCount = jdbcQueryService.updateOimUser(oimUserDto);
@@ -66,7 +66,7 @@ public class OmnitrackerJob {
                     // todo do something
                     jdbcQueryService.updateOimUserEndDate(o.getEmpNumber());
                     //
-                    omnitrackerApiService.callOmniTrackerClosureService(o.getEmpNumber(), null, o.getObjectId(), ResponseCodeEnum.SC_CC_RESOLVED, "Вирішено", "");
+                    omnitrackerApiService.callOmniTrackerClosureService(o.getEmpNumber(), o.getObjectId(), ResponseCodeEnum.SC_CC_RESOLVED, "Вирішено", "");
                 ***REMOVED***
                 jdbcQueryService.updateOmniRequestQuery(oimUserDto.getEmpNumber(), oimUserDto.getObjectId(), Collections.singletonMap("IS_PROCESSED", "1"));
             ***REMOVED***);
