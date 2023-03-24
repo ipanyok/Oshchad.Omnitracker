@@ -27,7 +27,7 @@ public class OmnitrackerApiLocal implements OmnitrackerApiService {
         ***REMOVED*** else {
             jdbcQueryService.updateOmniBlockRequestQuery(objectId, Collections.singletonMap("IS_CLOSURE_SENT", "1"));
         ***REMOVED***
-        log.info("callOmniTrackerClosureService()...");
+        log.info("callOmniTrackerClosureService()..." + objectId);
     ***REMOVED***
 
     @Override
@@ -37,7 +37,7 @@ public class OmnitrackerApiLocal implements OmnitrackerApiService {
         ***REMOVED*** else {
             jdbcQueryService.updateOmniBlockRequestQuery(objectId, Collections.singletonMap("IS_PICKUP_SENT", "1"));
         ***REMOVED***
-        log.info("callOmniTrackerPickupService()...");
+        log.info("callOmniTrackerPickupService()..." + objectId);
     ***REMOVED***
 
     @Override
@@ -49,7 +49,7 @@ public class OmnitrackerApiLocal implements OmnitrackerApiService {
         ***REMOVED*** catch (Exception e) {
             log.error(e.getMessage());
         ***REMOVED***
-        log.info("callOmniTrackerGetAttachmentService()...");
+        log.info("callOmniTrackerGetAttachmentService()..." + objectId);
         return string;
     ***REMOVED***
 ***REMOVED***

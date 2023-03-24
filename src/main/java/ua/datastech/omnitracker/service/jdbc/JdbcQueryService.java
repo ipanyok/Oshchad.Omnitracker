@@ -44,12 +44,12 @@ public class JdbcQueryService {
     private final static String OMNI_FIND_USER_TO_BLOCK_QUERY = "select * " +
             "from OMNI_BLOCK_REQUEST B, OMNI_BLOCK_DATA D " +
             "where B.ID = D.OMNI_BLOCK_REQUEST_ID " +
-            "AND IS_PROCESSED = 0 AND ACTION_DATE = :actionDate";
+            "AND IS_PROCESSED = 0 AND ACTION_DATE = :actionDate AND OBJECT_ID = :objectId";
 
     private final static String OMNI_FIND_USER_TO_BLOCK_ATTACHMENT_QUERY = "select * " +
             "from OMNI_BLOCK_REQUEST B, OMNI_BLOCK_ATTACHMENT D " +
             "where B.ID = D.OMNI_BLOCK_REQUEST_ID " +
-            "AND IS_PROCESSED = 0 AND ACTION_DATE = :actionDate";
+            "AND IS_PROCESSED = 0 AND ACTION_DATE = :actionDate AND OBJECT_ID = :objectId";
 
     private final static String OMNI_FIND_ONLY_UNPROCESSED_REQUESTS_QUERY = "select * from OMNI_REQUEST where IS_PROCESSED = 0 and IS_SAVED = 1 and EMP_NO = :empNumber AND OBJECT_ID = :objectId";
 
@@ -117,18 +117,20 @@ public class JdbcQueryService {
                 .build());
     ***REMOVED***
 
-    public List<OimUserDto> findUsersToBlock(LocalDate date) {
+    public List<OimUserDto> findUsersToBlock(LocalDate date, String objectId) {
         SqlParameterSource namedParameters = new MapSqlParameterSource()
-                .addValue("actionDate", date);
+                .addValue("actionDate", date)
+                .addValue("objectId", objectId);
         return jdbcTemplate.query(OMNI_FIND_USER_TO_BLOCK_QUERY, namedParameters, (rs, rowNum) -> OimUserDto.builder()
                 .adLogin(rs.getString("AD_LOGIN"))
                 .objectId(rs.getString("OBJECT_ID"))
                 .build());
     ***REMOVED***
 
-    public List<OimUserDto> findAttachment(LocalDate date) {
+    public List<OimUserDto> findAttachment(LocalDate date, String objectId) {
         SqlParameterSource namedParameters = new MapSqlParameterSource()
-                .addValue("actionDate", date);
+                .addValue("actionDate", date)
+                .addValue("objectId", objectId);
         return jdbcTemplate.query(OMNI_FIND_USER_TO_BLOCK_ATTACHMENT_QUERY, namedParameters, (rs, rowNum) -> OimUserDto.builder()
                 .attachment(rs.getString("ATTACHMENT"))
                 .objectId(rs.getString("OBJECT_ID"))
