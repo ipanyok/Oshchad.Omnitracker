@@ -34,7 +34,7 @@ public class OmnitrackerBlockJob {
                 omnitrackerApiService.callOmniTrackerPickupService(null, oimUserDto.getObjectId());
             ***REMOVED***
 
-            List<OimUserDto> usersToBlock = jdbcQueryService.findUsersToBlock(LocalDate.now());
+            List<OimUserDto> usersToBlock = jdbcQueryService.findUsersToBlock(LocalDate.now(), oimUserDto.getObjectId());
             usersToBlock.forEach(data -> {
                 // todo get users from data
                 List<String> users = Arrays.asList(data.getAdLogin());
@@ -50,7 +50,6 @@ public class OmnitrackerBlockJob {
     @Scheduled(cron = "*/10 * * * * *") // todo 10 min
     public void processAttachmentsData() {
         List<OimUserDto> omniData = jdbcQueryService.findAllUnprocessedAttachmentsRequests();
-
         omniData.forEach(oimUserDto -> {
             if (!oimUserDto.getIsPickupSent()) {
                 String attachmentString = omnitrackerApiService.callOmniTrackerGetAttachmentService(oimUserDto.getOid(), oimUserDto.getObjectId());
@@ -61,7 +60,7 @@ public class OmnitrackerBlockJob {
                 omnitrackerApiService.callOmniTrackerPickupService(null, oimUserDto.getObjectId());
             ***REMOVED***
 
-            List<OimUserDto> attachmentData = jdbcQueryService.findAttachment(LocalDate.now());
+            List<OimUserDto> attachmentData = jdbcQueryService.findAttachment(LocalDate.now(), oimUserDto.getObjectId());
             attachmentData.forEach(data -> {
                 List<String> users = ExcelFileReader.read(data.getAttachment());
                 // todo block user
