@@ -23,7 +23,7 @@ public class OmnitrackerJob {
 
     // todo think about transactions and try/catch sections (when send closure)
 //    @Transactional
-    @Scheduled(cron = "*/10 * * * * *") // todo 10 min
+//    @Scheduled(cron = "*/10 * * * * *") // todo 10 min
     public void saveOmniDataToOIM() {
         List<OimUserDto> omniData = jdbcQueryService.findAllUnprocessedRequests();
 
@@ -53,7 +53,7 @@ public class OmnitrackerJob {
     ***REMOVED***
 
     @Transactional
-    @Scheduled(cron = "*/10 * * * * *") // todo 10 min
+//    @Scheduled(cron = "*/10 * * * * *") // todo 10 min
     public void processRebranching() {
         List<OimUserDto> rebranchedUsers = jdbcQueryService.findOimUnprocessedUsers();
 
@@ -74,7 +74,7 @@ public class OmnitrackerJob {
         ***REMOVED***);
     ***REMOVED***
 
-    @Scheduled(cron = "@daily")
+//    @Scheduled(cron = "@daily")
     public void cleanupData() {
         List<OimUserDto> rebranchedUsers = jdbcQueryService.findOimUsersToClean();
         rebranchedUsers.forEach(oimUserDto -> {
