@@ -124,6 +124,7 @@ public class JdbcQueryService {
         return jdbcTemplate.query(OMNI_FIND_USER_TO_BLOCK_QUERY, namedParameters, (rs, rowNum) -> OimUserDto.builder()
                 .adLogin(rs.getString("AD_LOGIN"))
                 .objectId(rs.getString("OBJECT_ID"))
+                .action(rs.getString("ACTION"))
                 .build());
     ***REMOVED***
 
@@ -134,6 +135,7 @@ public class JdbcQueryService {
         return jdbcTemplate.query(OMNI_FIND_USER_TO_BLOCK_ATTACHMENT_QUERY, namedParameters, (rs, rowNum) -> OimUserDto.builder()
                 .attachment(rs.getString("ATTACHMENT"))
                 .objectId(rs.getString("OBJECT_ID"))
+                .action(rs.getString("ACTION"))
                 .build());
     ***REMOVED***
 
