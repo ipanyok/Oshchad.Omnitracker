@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
+import ua.datastech.omnitracker.model.dto.ActionType;
 
 import java.util.List;
 
@@ -15,10 +16,10 @@ public class PowerShellLocal implements PowerShellExecutor {
 
     @Override
     public void execute(String action, List<String> adLogins) {
-        if (action.equals("DISABLE")) {
+        if (action.equals(ActionType.DISABLE_USER.name())) {
             adLogins.forEach(s -> log.info("User " + s + " was blocked"));
         ***REMOVED***
-        if (action.equals("ENABLE")) {
+        if (action.equals(ActionType.ENABLE_USER.name())) {
             adLogins.forEach(s -> log.info("User " + s + " was enabled"));
         ***REMOVED***
     ***REMOVED***

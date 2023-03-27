@@ -41,7 +41,7 @@ public class OmnitrackerController {
                 .build();
     ***REMOVED***
 
-    @PostMapping(value = "/block/call-update-req", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/block/call-user-info", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public OmniTrackerResponse omnitrackerApiGetAttachmentsInfo(@RequestBody OmniTrackerAttachmentInfoRequest request) {
         log.info("call-update-req()... objectId: " + request.getObjectID());
         omnitrackerService.saveOmniAttachmetRequest(request);
@@ -50,9 +50,9 @@ public class OmnitrackerController {
                 .build();
     ***REMOVED***
 
-    @GetMapping(value = "/api/powershell")
-    public void executePowerShell() {
-        powerShellExecutor.execute("DISABLE", Arrays.asList("panokiv"));
-    ***REMOVED***
+//    @GetMapping(value = "/api/powershell")
+//    public void executePowerShell() {
+//        powerShellExecutor.execute("DISABLE", Arrays.asList("panokiv"));
+//    ***REMOVED***
 
 ***REMOVED***
