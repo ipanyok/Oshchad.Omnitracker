@@ -13,6 +13,8 @@ import ua.datastech.omnitracker.model.omni.api.OmniTrackerResponse;
 import ua.datastech.omnitracker.service.script.PowerShellExecutor;
 import ua.datastech.omnitracker.service.tracker.OmnitrackerService;
 
+import java.util.Arrays;
+
 @RestController
 @Slf4j
 @RequiredArgsConstructor
@@ -50,7 +52,7 @@ public class OmnitrackerController {
 
     @GetMapping(value = "/api/powershell")
     public void executePowerShell() {
-        powerShellExecutor.execute();
+        powerShellExecutor.execute("DISABLE", Arrays.asList("panokiv"));
     ***REMOVED***
 
 ***REMOVED***

@@ -1,6 +1,5 @@
 package ua.datastech.omnitracker.service.tracker.api;
 
-import ua.datastech.omnitracker.model.dto.OimUserDto;
 import ua.datastech.omnitracker.model.omni.api.ResponseCodeEnum;
 
 public interface OmnitrackerApiService {
