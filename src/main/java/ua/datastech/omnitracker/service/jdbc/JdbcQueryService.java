@@ -31,14 +31,13 @@ public class JdbcQueryService {
     private final static String OMNI_FIND_ALL_UNPROCESSED_REQUESTS_QUERY = "select * from OMNI_REQUEST where IS_SAVED = 0 AND IS_PROCESSED = 0";
 
     private final static String OMNI_FIND_ALL_BLOCK_UNPROCESSED_REQUESTS_QUERY = "select * " +
-            "from OMNI_BLOCK_REQUEST B, OMNI_BLOCK_DATA D " +
-            "where B.ID = D.OMNI_BLOCK_REQUEST_ID " +
-            "AND IS_PROCESSED = 0";
+            "from OMNI_BLOCK_REQUEST " +
+            "WHERE IS_PROCESSED = 0";
 
-    private final static String OMNI_FIND_ALL_BLOCK_ATTACHMENT_QUERY = "select * " +
-            "from OMNI_BLOCK_REQUEST B, OMNI_BLOCK_ATTACHMENT D " +
-            "where B.ID = D.OMNI_BLOCK_REQUEST_ID " +
-            "AND IS_PROCESSED = 0";
+//    private final static String OMNI_FIND_ALL_BLOCK_ATTACHMENT_QUERY = "select * " +
+//            "from OMNI_BLOCK_REQUEST B, OMNI_BLOCK_ATTACHMENT D " +
+//            "where B.ID = D.OMNI_BLOCK_REQUEST_ID " +
+//            "AND IS_PROCESSED = 0";
 
 
     private final static String OMNI_FIND_USER_TO_BLOCK_QUERY = "select * " +
@@ -71,6 +70,32 @@ public class JdbcQueryService {
 
     private final static String OIM_FIND_USERS_TO_CLEAN_QUERY = "select USR_KEY, USR_EMP_NO from usr where USR_UDF_REBRANCHINGENDDATE = :endDate";
 
+    private final static String OIM_FIND_USR_TO_BLOCK_BY_EMP_QUERY = "SELECT distinct ad.ud_ADUSER_UID AD_LOGIN, 'UPDATE USR SET USR_STATUS = ''DISABLED'' where usr_key = '''||usr.usr_key||''';' disable_usr***REMOVED***n" +
+            "FROM USR***REMOVED***n" +
+            "  JOIN ORC on orc.usr_key = usr.usr_key***REMOVED***n" +
+            "  join UD_ADUSER ad on ad.ORC_KEY = orc.orc_key***REMOVED***n" +
+            "  join oiu on oiu .orc_key = orc.orc_key***REMOVED***n" +
+            "  join ost on oiu.ost_key = ost.osT_key and OST_STATUS <> 'Deleted'***REMOVED***n" +
+            "WHERE USR.USR_DISPLAY_NAME NOT IN (select LKV_DECODED from LKu ***REMOVED***n" +
+            "    join lkv on lku.lku_key = lkv.lku_key ***REMOVED***n" +
+            "    where LKU_TYPE_STRING_KEY = 'Lookup.Actualize.UserVacationExclusion')***REMOVED***n" +
+            "AND USR.USR_EMP_NO IN (:empNumbers)";
+
+    private final static String OIM_FIND_USR_TO_ENABLE_BY_EMP_QUERY = "SELECT distinct ad.ud_ADUSER_UID AD_LOGIN, 'UPDATE USR SET USR_STATUS = ''Active'' where usr_key = '''||usr.usr_key||''';' enabled_usr,***REMOVED***n" +
+            "'UPDATE USER_PROVISIONING_ATTRS SET POLICY_EVAL_IN_PROGRESS = 0, POLICY_EVAL_NEEDED = 1 where usr_key = '''||usr.usr_key||''';' upd_AP***REMOVED***n" +
+            "FROM USR***REMOVED***n" +
+            "  JOIN ORC on orc.usr_key = usr.usr_key***REMOVED***n" +
+            "  join UD_ADUSER ad on ad.ORC_KEY = orc.orc_key***REMOVED***n" +
+            "  join oiu on oiu .orc_key = orc.orc_key***REMOVED***n" +
+            "  join ost on oiu.ost_key = ost.osT_key and OST_STATUS <> 'Deleted'***REMOVED***n" +
+            "WHERE (USR.USR_LOCKED <> '1' OR USR.USR_UDF_EXTENSIONATTRIBUTE15 is null)***REMOVED***n" +
+            "AND USR.USR_DISPLAY_NAME NOT IN (select LKV_DECODED from LKu ***REMOVED***n" +
+            "    join lkv on lku.lku_key = lkv.lku_key ***REMOVED***n" +
+            "    where LKU_TYPE_STRING_KEY = 'Lookup.Actualize.UserVacationExclusion')***REMOVED***n" +
+            "AND (to_date(sysdate, 'dd.mm.yyyy') between to_date(usr.USR_Start_date, 'dd.mm.yyyy') and to_date(nvl(usr.usr_end_date, sysdate + 1), 'dd.mm.yyyy'))***REMOVED***n" +
+            "AND (to_date(sysdate, 'dd.mm.yyyy') NOT between to_date(usr.USR_UDF_STARTDATEVACATION, 'dd.mm.yyyy') and to_date(nvl(usr.USR_UDF_ENDDATEVACATION, sysdate + 1), 'dd.mm.yyyy') or USR_UDF_STARTDATEVACATION is null)***REMOVED***n" +
+            "AND USR.USR_EMP_NO IN (:empNumbers)";
+
     public void updateOmniRequestQuery(String empNumber, String objectId, Map<String, String> valuesToUpdate) {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("empNumber", empNumber)
@@ -82,6 +107,18 @@ public class JdbcQueryService {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("objectId", objectId);
         jdbcTemplate.execute(String.format(OMNI_UPDATE_BLOCK_QUERY, convertParamsMapToQueryData(valuesToUpdate)), params, PreparedStatement::executeUpdate);
+    ***REMOVED***
+
+    public List<String> findUsersToBlockByEmployeeNumber(List<String> empNumbers) {
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("empNumbers", empNumbers);
+        return jdbcTemplate.query(OIM_FIND_USR_TO_BLOCK_BY_EMP_QUERY, params, (rs, rowNum) -> rs.getString("AD_LOGIN"));
+    ***REMOVED***
+
+    public List<String> findUsersToEnableByEmployeeNumber(List<String> empNumbers) {
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("empNumbers", empNumbers);
+        return jdbcTemplate.query(OIM_FIND_USR_TO_ENABLE_BY_EMP_QUERY, params, (rs, rowNum) -> rs.getString("AD_LOGIN"));
     ***REMOVED***
 
     public List<OimUserDto> findAllUnprocessedRequests() {
@@ -100,7 +137,6 @@ public class JdbcQueryService {
     public List<OimUserDto> findAllUnprocessedBlockRequests() {
         return jdbcTemplate.query(OMNI_FIND_ALL_BLOCK_UNPROCESSED_REQUESTS_QUERY, (rs, rowNum) -> OimUserDto.builder()
                 .objectId(rs.getString("OBJECT_ID"))
-                .adLogin(rs.getString("AD_LOGIN"))
                 .action(rs.getString("ACTION"))
                 .actionDate(new SimpleDateFormat("yyyy-MM-dd").format(rs.getDate("ACTION_DATE")))
                 .isPickupSent(rs.getBoolean("IS_PICKUP_SENT"))
@@ -108,21 +144,21 @@ public class JdbcQueryService {
                 .build());
     ***REMOVED***
 
-    public List<OimUserDto> findAllUnprocessedAttachmentsRequests() {
-        return jdbcTemplate.query(OMNI_FIND_ALL_BLOCK_ATTACHMENT_QUERY, (rs, rowNum) -> OimUserDto.builder()
-                .objectId(rs.getString("OBJECT_ID"))
-                .oid(rs.getLong("OID"))
-                .isPickupSent(rs.getBoolean("IS_PICKUP_SENT"))
-                .id(rs.getLong("ID"))
-                .build());
-    ***REMOVED***
+//    public List<OimUserDto> findAllUnprocessedAttachmentsRequests() {
+//        return jdbcTemplate.query(OMNI_FIND_ALL_BLOCK_ATTACHMENT_QUERY, (rs, rowNum) -> OimUserDto.builder()
+//                .objectId(rs.getString("OBJECT_ID"))
+//                .oid(rs.getLong("OID"))
+//                .isPickupSent(rs.getBoolean("IS_PICKUP_SENT"))
+//                .id(rs.getLong("ID"))
+//                .build());
+//    ***REMOVED***
 
-    public List<OimUserDto> findUsersToBlock(LocalDate date, String objectId) {
+    public List<OimUserDto> findUsersToProcess(LocalDate date, String objectId) {
         SqlParameterSource namedParameters = new MapSqlParameterSource()
                 .addValue("actionDate", date)
                 .addValue("objectId", objectId);
         return jdbcTemplate.query(OMNI_FIND_USER_TO_BLOCK_QUERY, namedParameters, (rs, rowNum) -> OimUserDto.builder()
-                .adLogin(rs.getString("AD_LOGIN"))
+                .empNumber(rs.getString("EMP_NUMBER"))
                 .objectId(rs.getString("OBJECT_ID"))
                 .action(rs.getString("ACTION"))
                 .build());

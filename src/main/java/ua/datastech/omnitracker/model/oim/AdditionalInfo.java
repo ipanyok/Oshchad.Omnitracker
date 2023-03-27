@@ -3,6 +3,8 @@ package ua.datastech.omnitracker.model.oim;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.util.List;
+
 @Data
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class AdditionalInfo {
@@ -17,4 +19,7 @@ public class AdditionalInfo {
     private String adLogin;
     private String action;
     private String actionDate;
+
+    private String date;
+    private List<Persons> persons;
 ***REMOVED***

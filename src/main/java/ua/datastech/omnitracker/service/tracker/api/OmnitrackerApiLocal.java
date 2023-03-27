@@ -27,7 +27,7 @@ public class OmnitrackerApiLocal implements OmnitrackerApiService {
         ***REMOVED*** else {
             jdbcQueryService.updateOmniBlockRequestQuery(objectId, Collections.singletonMap("IS_CLOSURE_SENT", "1"));
         ***REMOVED***
-        log.info("callOmniTrackerClosureService()..." + objectId);
+        log.info("callOmniTrackerClosureService()..." + objectId + " -> " + solution);
     ***REMOVED***
 
     @Override
