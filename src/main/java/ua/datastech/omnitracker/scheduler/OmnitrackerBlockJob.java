@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import ua.datastech.omnitracker.model.dto.ActionType;
 import ua.datastech.omnitracker.model.dto.OimUserDto;
 import ua.datastech.omnitracker.model.omni.api.ResponseCodeEnum;
 import ua.datastech.omnitracker.service.jdbc.JdbcQueryService;
@@ -12,9 +13,10 @@ import ua.datastech.omnitracker.service.script.PowerShellExecutor;
 import ua.datastech.omnitracker.service.tracker.api.OmnitrackerApiService;
 
 import java.time.LocalDate;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -27,31 +29,37 @@ public class OmnitrackerBlockJob {
 
     // todo think about transactions and try/catch sections (when send closure)
 //    @Transactional
-//    @Scheduled(cron = "*/10 * * * * *") // todo 10 min
+    @Scheduled(cron = "*/10 * * * * *") // todo 10 min
     public void processData() {
         List<OimUserDto> omniData = jdbcQueryService.findAllUnprocessedBlockRequests();
         omniData.forEach(oimUserDto -> {
+
+            checkIfDateExpired(oimUserDto);
+
             if (!oimUserDto.getIsPickupSent()) {
                 omnitrackerApiService.callOmniTrackerPickupService(null, oimUserDto.getObjectId());
             ***REMOVED***
 
-            List<OimUserDto> usersDataToBlock = jdbcQueryService.findUsersToBlock(LocalDate.now(), oimUserDto.getObjectId());
-            usersDataToBlock.forEach(data -> {
-                // todo get users from data
-                List<String> users = Arrays.asList(data.getAdLogin()); // need query from Egor
+            List<OimUserDto> usersDataToBlock = jdbcQueryService.findUsersToProcess(LocalDate.now(), oimUserDto.getObjectId());
+            List<String> users = new ArrayList<>();
+            if (oimUserDto.getAction() == ActionType.DISABLE_USER.name()) {
+                users = jdbcQueryService.findUsersToBlockByEmployeeNumber(usersDataToBlock.stream().map(OimUserDto::getEmpNumber).collect(Collectors.toList()));
+            ***REMOVED***
+            if (oimUserDto.getAction() == ActionType.ENABLE_USER.name()) {
+                users = jdbcQueryService.findUsersToEnableByEmployeeNumber(usersDataToBlock.stream().map(OimUserDto::getEmpNumber).collect(Collectors.toList()));
+            ***REMOVED***
 
-                powerShellExecutor.execute(data.getAction(), users);
-
-                // todo maybe need to check if closure was sent
+            if (usersDataToBlock != null && !usersDataToBlock.isEmpty()) {
+                powerShellExecutor.execute(oimUserDto.getAction(), users);
                 omnitrackerApiService.callOmniTrackerClosureService(null, oimUserDto.getObjectId(), ResponseCodeEnum.SC_CC_RESOLVED, "Вирішено", "");
                 jdbcQueryService.updateOmniBlockRequestQuery(oimUserDto.getObjectId(), Collections.singletonMap("IS_PROCESSED", "1"));
-            ***REMOVED***);
+            ***REMOVED***
         ***REMOVED***);
     ***REMOVED***
 
 //    @Scheduled(cron = "*/10 * * * * *") // todo 10 min
     public void processAttachmentsData() {
-        List<OimUserDto> omniData = jdbcQueryService.findAllUnprocessedAttachmentsRequests();
+        List<OimUserDto> omniData = jdbcQueryService.findAllUnprocessedBlockRequests();
         omniData.forEach(oimUserDto -> {
             if (!oimUserDto.getIsPickupSent()) {
                 String attachmentString = omnitrackerApiService.callOmniTrackerGetAttachmentService(oimUserDto.getOid(), oimUserDto.getObjectId());
@@ -72,6 +80,17 @@ public class OmnitrackerBlockJob {
                 jdbcQueryService.updateOmniBlockRequestQuery(data.getObjectId(), Collections.singletonMap("IS_PROCESSED", "1"));
             ***REMOVED***);
         ***REMOVED***);
+    ***REMOVED***
+
+    private void checkIfDateExpired(OimUserDto oimUserDto) {
+        if (LocalDate.parse(oimUserDto.getActionDate()).isBefore(LocalDate.now()) && !oimUserDto.getIsClosureSent()) {
+            if (!oimUserDto.getIsPickupSent()) {
+                omnitrackerApiService.callOmniTrackerPickupService(null, oimUserDto.getObjectId());
+            ***REMOVED***
+            omnitrackerApiService.callOmniTrackerClosureService(null, oimUserDto.getObjectId(), ResponseCodeEnum.SC_CC_REJECTED, "Відхилено. Дата блокування менша поточної", "");
+            jdbcQueryService.updateOmniBlockRequestQuery(oimUserDto.getObjectId(), Collections.singletonMap("IS_PROCESSED", "1"));
+            return;
+        ***REMOVED***
     ***REMOVED***
 
 ***REMOVED***

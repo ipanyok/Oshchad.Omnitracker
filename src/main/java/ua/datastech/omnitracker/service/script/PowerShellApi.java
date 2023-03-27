@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
+import ua.datastech.omnitracker.model.dto.ActionType;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -36,10 +37,10 @@ public class PowerShellApi implements PowerShellExecutor {
             powerShellProcess = Runtime.getRuntime().exec(String.format(CONNECT, psUser, psPassword));
 
             // todo return non blocked
-            if (action.equals("DISABLE")) {
+            if (action.equals(ActionType.DISABLE_USER.name())) {
                 adLogins.forEach(login -> runPowerShell(COMMAND_DISABLE, login));
             ***REMOVED***
-            if (action.equals("ENABLE")) {
+            if (action.equals(ActionType.ENABLE_USER.name())) {
                 adLogins.forEach(login -> runPowerShell(COMMAND_ENABLE, login));
             ***REMOVED***
 
