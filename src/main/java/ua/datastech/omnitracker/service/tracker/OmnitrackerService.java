@@ -61,6 +61,18 @@ public class OmnitrackerService {
                 );
             ***REMOVED***);
         ***REMOVED***
+        if (request.getAdditionalInfo().getOrganizations() != null) {
+            request.getAdditionalInfo().getOrganizations().forEach(org -> {
+                SqlParameterSource params = new MapSqlParameterSource()
+                        .addValue("objectId", request.getObjectID())
+                        .addValue("sourceId", org.getSourceID());
+                List<String> ids = jdbcTemplate.query("SELECT ID FROM OMNI_BLOCK_REQUEST WHERE OBJECT_ID = :objectId", params, (rs, rowNum) -> rs.getString("ID"));
+                jdbcTemplate.execute("insert into OMNI_BLOCK_DATA (OMNI_BLOCK_REQUEST_ID, SOURCE_ID) VALUES (" + ids.get(0) + ", :sourceId)",
+                        params,
+                        PreparedStatement::executeUpdate
+                );
+            ***REMOVED***);
+        ***REMOVED***
         if (execute != 0) {
             log.info("Omni block request " + request.getObjectID() + " was saved.");
         ***REMOVED***

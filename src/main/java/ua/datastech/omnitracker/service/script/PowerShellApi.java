@@ -37,10 +37,10 @@ public class PowerShellApi implements PowerShellExecutor {
             powerShellProcess = Runtime.getRuntime().exec(String.format(CONNECT, psUser, psPassword));
 
             // todo return non blocked
-            if (action.equals(ActionType.DISABLE_USER.name())) {
+            if (action.equals(ActionType.DISABLE_USER.name()) || action.equals(ActionType.DISABLE_REGION.name()) || action.equals(ActionType.DISABLE_BY_FILE.name())) {
                 adLogins.forEach(login -> runPowerShell(COMMAND_DISABLE, login));
             ***REMOVED***
-            if (action.equals(ActionType.ENABLE_USER.name())) {
+            if (action.equals(ActionType.ENABLE_USER.name()) || action.equals(ActionType.ENABLE_REGION.name()) || action.equals(ActionType.ENABLE_BY_FILE.name())) {
                 adLogins.forEach(login -> runPowerShell(COMMAND_ENABLE, login));
             ***REMOVED***
 

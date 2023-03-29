@@ -32,12 +32,13 @@ public class JdbcQueryService {
 
     private final static String OMNI_FIND_ALL_BLOCK_UNPROCESSED_REQUESTS_QUERY = "select * " +
             "from OMNI_BLOCK_REQUEST " +
-            "WHERE IS_PROCESSED = 0";
+            "WHERE IS_PROCESSED = 0 " +
+            "AND ACTION IN ('DISABLE_USER', 'ENABLE_USER', 'DISABLE_REGION', 'ENABLE_REGION')";
 
-//    private final static String OMNI_FIND_ALL_BLOCK_ATTACHMENT_QUERY = "select * " +
-//            "from OMNI_BLOCK_REQUEST B, OMNI_BLOCK_ATTACHMENT D " +
-//            "where B.ID = D.OMNI_BLOCK_REQUEST_ID " +
-//            "AND IS_PROCESSED = 0";
+    private final static String OMNI_FIND_ALL_BLOCK_ATTACHMENT_QUERY = "select * " +
+            "from OMNI_BLOCK_REQUEST " +
+            "WHERE IS_PROCESSED = 0 " +
+            "AND ACTION IN ('DISABLE_BY_FILE', 'ENABLE_BY_FILE')";
 
 
     private final static String OMNI_FIND_USER_TO_BLOCK_QUERY = "select * " +
@@ -49,6 +50,11 @@ public class JdbcQueryService {
             "from OMNI_BLOCK_REQUEST B, OMNI_BLOCK_ATTACHMENT D " +
             "where B.ID = D.OMNI_BLOCK_REQUEST_ID " +
             "AND IS_PROCESSED = 0 AND ACTION_DATE = :actionDate AND OBJECT_ID = :objectId";
+
+    private final static String OMNI_FIND_ATTACHMENT_QUERY = "select * " +
+            "from OMNI_BLOCK_REQUEST B, OMNI_BLOCK_ATTACHMENT D " +
+            "where B.ID = D.OMNI_BLOCK_REQUEST_ID " +
+            "AND IS_PROCESSED = 0 AND OBJECT_ID = :objectId";
 
     private final static String OMNI_FIND_ONLY_UNPROCESSED_REQUESTS_QUERY = "select * from OMNI_REQUEST where IS_PROCESSED = 0 and IS_SAVED = 1 and EMP_NO = :empNumber AND OBJECT_ID = :objectId";
 
@@ -96,6 +102,43 @@ public class JdbcQueryService {
             "AND (to_date(sysdate, 'dd.mm.yyyy') NOT between to_date(usr.USR_UDF_STARTDATEVACATION, 'dd.mm.yyyy') and to_date(nvl(usr.USR_UDF_ENDDATEVACATION, sysdate + 1), 'dd.mm.yyyy') or USR_UDF_STARTDATEVACATION is null)***REMOVED***n" +
             "AND USR.USR_EMP_NO IN (:empNumbers)";
 
+    private final static String OIM_FIND_USR_TO_BLOCK_BY_SOURCE_QUERY = "SELECT distinct ad.ud_ADUSER_UID AD_LOGIN, 'UPDATE USR SET USR_STATUS = ''DISABLED'' where usr_key = '''||usr.usr_key||''';' disable_usr***REMOVED***n" +
+            "FROM USR***REMOVED***n" +
+            "  JOIN ORC on orc.usr_key = usr.usr_key***REMOVED***n" +
+            "  join UD_ADUSER ad on ad.ORC_KEY = orc.orc_key***REMOVED***n" +
+            "  join oiu on oiu .orc_key = orc.orc_key***REMOVED***n" +
+            "  join ost on oiu.ost_key = ost.osT_key and OST_STATUS <> 'Deleted'***REMOVED***n" +
+            "WHERE USR.USR_DISPLAY_NAME NOT IN (select LKV_DECODED from LKu ***REMOVED***n" +
+            "    join lkv on lku.lku_key = lkv.lku_key ***REMOVED***n" +
+            "    where LKU_TYPE_STRING_KEY = 'Lookup.Actualize.UserVacationExclusion')***REMOVED***n" +
+            "AND usr.act_key IN ***REMOVED***n" +
+            "(select act.act_key***REMOVED***n" +
+            "from act***REMOVED***n" +
+            "where (to_date(sysdate, 'dd.mm.yyyy') between to_date(ORG_UDF_FROMDATE, 'dd.mm.yyyy') and to_date(nvl(ORG_UDF_TODATE, sysdate + 1), 'dd.mm.yyyy'))***REMOVED***n" +
+            "start with ORG_UDF_HRORGCODE IN (:sourceIds)***REMOVED***n" +
+            "connect by prior ORG_UDF_HRORGCODE = ORG_UDF_HRPARENTORGCODE)";
+
+    private final static String OIM_FIND_USR_TO_ENABLE_BY_SOURCE_QUERY = "SELECT distinct ad.ud_ADUSER_UID AD_LOGIN, 'UPDATE USR SET USR_STATUS = ''Active'' where usr_key = '''||usr.usr_key||''';' enabled_usr,***REMOVED***n" +
+            "'UPDATE USER_PROVISIONING_ATTRS SET POLICY_EVAL_IN_PROGRESS = 0, POLICY_EVAL_NEEDED = 1 where usr_key = '''||usr.usr_key||''';' upd_AP***REMOVED***n" +
+            "FROM USR***REMOVED***n" +
+            "  JOIN ORC on orc.usr_key = usr.usr_key***REMOVED***n" +
+            "  join UD_ADUSER ad on ad.ORC_KEY = orc.orc_key***REMOVED***n" +
+            "  join oiu on oiu .orc_key = orc.orc_key***REMOVED***n" +
+            "  join ost on oiu.ost_key = ost.osT_key and OST_STATUS <> 'Deleted'***REMOVED***n" +
+            "WHERE (USR.USR_LOCKED <> '1' OR USR.USR_UDF_EXTENSIONATTRIBUTE15 is null)***REMOVED***n" +
+            "AND USR.USR_DISPLAY_NAME NOT IN (select LKV_DECODED from LKu ***REMOVED***n" +
+            "    join lkv on lku.lku_key = lkv.lku_key ***REMOVED***n" +
+            "    where LKU_TYPE_STRING_KEY = 'Lookup.Actualize.UserVacationExclusion')***REMOVED***n" +
+            "AND (to_date(sysdate, 'dd.mm.yyyy') between to_date(usr.USR_Start_date, 'dd.mm.yyyy') and to_date(nvl(usr.usr_end_date, sysdate + 1), 'dd.mm.yyyy'))***REMOVED***n" +
+            "AND (to_date(sysdate, 'dd.mm.yyyy') NOT between to_date(usr.USR_UDF_STARTDATEVACATION, 'dd.mm.yyyy') and to_date(nvl(usr.USR_UDF_ENDDATEVACATION, sysdate + 1), 'dd.mm.yyyy') or USR_UDF_STARTDATEVACATION is null)***REMOVED***n" +
+            "AND usr.act_key IN ***REMOVED***n" +
+            "(select act.act_key***REMOVED***n" +
+            "from act***REMOVED***n" +
+            "where (to_date(sysdate, 'dd.mm.yyyy') between to_date(ORG_UDF_FROMDATE, 'dd.mm.yyyy') and to_date(nvl(ORG_UDF_TODATE, sysdate + 1), 'dd.mm.yyyy'))***REMOVED***n" +
+            "***REMOVED***n" +
+            "start with ORG_UDF_HRORGCODE IN (:sourceIds)***REMOVED***n" +
+            "connect by prior ORG_UDF_HRORGCODE = ORG_UDF_HRPARENTORGCODE)";
+
     public void updateOmniRequestQuery(String empNumber, String objectId, Map<String, String> valuesToUpdate) {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("empNumber", empNumber)
@@ -121,6 +164,18 @@ public class JdbcQueryService {
         return jdbcTemplate.query(OIM_FIND_USR_TO_ENABLE_BY_EMP_QUERY, params, (rs, rowNum) -> rs.getString("AD_LOGIN"));
     ***REMOVED***
 
+    public List<String> findUsersToBlockBySourceId(List<String> sourceIds) {
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("sourceIds", sourceIds);
+        return jdbcTemplate.query(OIM_FIND_USR_TO_BLOCK_BY_SOURCE_QUERY, params, (rs, rowNum) -> rs.getString("AD_LOGIN"));
+    ***REMOVED***
+
+    public List<String> findUsersToEnableBySourceId(List<String> sourceIds) {
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("sourceIds", sourceIds);
+        return jdbcTemplate.query(OIM_FIND_USR_TO_ENABLE_BY_SOURCE_QUERY, params, (rs, rowNum) -> rs.getString("AD_LOGIN"));
+    ***REMOVED***
+
     public List<OimUserDto> findAllUnprocessedRequests() {
         return jdbcTemplate.query(OMNI_FIND_ALL_UNPROCESSED_REQUESTS_QUERY, (rs, rowNum) -> OimUserDto.builder()
                 .objectId(rs.getString("OBJECT_ID"))
@@ -144,14 +199,16 @@ public class JdbcQueryService {
                 .build());
     ***REMOVED***
 
-//    public List<OimUserDto> findAllUnprocessedAttachmentsRequests() {
-//        return jdbcTemplate.query(OMNI_FIND_ALL_BLOCK_ATTACHMENT_QUERY, (rs, rowNum) -> OimUserDto.builder()
-//                .objectId(rs.getString("OBJECT_ID"))
-//                .oid(rs.getLong("OID"))
-//                .isPickupSent(rs.getBoolean("IS_PICKUP_SENT"))
-//                .id(rs.getLong("ID"))
-//                .build());
-//    ***REMOVED***
+    public List<OimUserDto> findAllUnprocessedAttachmentsRequests() {
+        return jdbcTemplate.query(OMNI_FIND_ALL_BLOCK_ATTACHMENT_QUERY, (rs, rowNum) -> OimUserDto.builder()
+                .objectId(rs.getString("OBJECT_ID"))
+                .action(rs.getString("ACTION"))
+                .actionDate(new SimpleDateFormat("yyyy-MM-dd").format(rs.getDate("ACTION_DATE")))
+                .isPickupSent(rs.getBoolean("IS_PICKUP_SENT"))
+                .isClosureSent(rs.getBoolean("IS_CLOSURE_SENT"))
+                .id(rs.getLong("ID"))
+                .build());
+    ***REMOVED***
 
     public List<OimUserDto> findUsersToProcess(LocalDate date, String objectId) {
         SqlParameterSource namedParameters = new MapSqlParameterSource()
@@ -161,6 +218,7 @@ public class JdbcQueryService {
                 .empNumber(rs.getString("EMP_NUMBER"))
                 .objectId(rs.getString("OBJECT_ID"))
                 .action(rs.getString("ACTION"))
+                .sourceId(rs.getString("SOURCE_ID"))
                 .build());
     ***REMOVED***
 
@@ -172,6 +230,16 @@ public class JdbcQueryService {
                 .attachment(rs.getString("ATTACHMENT"))
                 .objectId(rs.getString("OBJECT_ID"))
                 .action(rs.getString("ACTION"))
+                .build());
+    ***REMOVED***
+
+    public List<OimUserDto> findAttachmentToSave(String objectId) {
+        SqlParameterSource namedParameters = new MapSqlParameterSource()
+                .addValue("objectId", objectId);
+        return jdbcTemplate.query(OMNI_FIND_ATTACHMENT_QUERY, namedParameters, (rs, rowNum) -> OimUserDto.builder()
+                .attachment(rs.getString("ATTACHMENT"))
+                .oid(rs.getLong("OID"))
+                .objectId(rs.getString("OBJECT_ID"))
                 .build());
     ***REMOVED***
 

@@ -6,8 +6,8 @@ import lombok.Data;
 
 @Data
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
-public class Persons {
+public class Organizations {
 
-    private String employeeID;
+    private String sourceID;
 
 ***REMOVED***

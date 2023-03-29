@@ -1,5 +1,7 @@
 package ua.datastech.omnitracker.model.oim;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -7,6 +9,7 @@ import java.util.List;
 
 @Data
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class AdditionalInfo {
 
     @EqualsAndHashCode.Include
@@ -22,4 +25,5 @@ public class AdditionalInfo {
 
     private String date;
     private List<Persons> persons;
+    private List<Organizations> organizations;
 ***REMOVED***
