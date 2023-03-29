@@ -9,6 +9,7 @@ import ua.datastech.omnitracker.model.dto.ActionType;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -31,17 +32,18 @@ public class PowerShellApi implements PowerShellExecutor {
             "Import-Module ActiveDirectory\n";
 
     @Override
-    public void execute(String action, List<String> adLogins) {
+    public List<String> execute(String action, List<String> adLogins) {
         Process powerShellProcess = null;
+        List<String> unprocessedUsers = new ArrayList<>();
         try {
             powerShellProcess = Runtime.getRuntime().exec(String.format(CONNECT, psUser, psPassword));
 
             // todo return non blocked
             if (action.equals(ActionType.DISABLE_USER.name()) || action.equals(ActionType.DISABLE_REGION.name()) || action.equals(ActionType.DISABLE_BY_FILE.name())) {
-                adLogins.forEach(login -> runPowerShell(COMMAND_DISABLE, login));
+                adLogins.forEach(login -> runPowerShell(COMMAND_DISABLE, login, unprocessedUsers));
             ***REMOVED***
             if (action.equals(ActionType.ENABLE_USER.name()) || action.equals(ActionType.ENABLE_REGION.name()) || action.equals(ActionType.ENABLE_BY_FILE.name())) {
-                adLogins.forEach(login -> runPowerShell(COMMAND_ENABLE, login));
+                adLogins.forEach(login -> runPowerShell(COMMAND_ENABLE, login, unprocessedUsers));
             ***REMOVED***
 
         ***REMOVED*** catch (Exception e) {
@@ -52,10 +54,10 @@ public class PowerShellApi implements PowerShellExecutor {
             ***REMOVED*** catch (Exception ex) {
             ***REMOVED***
         ***REMOVED***
-
+        return unprocessedUsers;
     ***REMOVED***
 
-    private void runPowerShell(String script, String adLogin) {
+    private List<String> runPowerShell(String script, String adLogin, List<String> unprocessedUsers) {
         try {
             Process powerShellProcess = Runtime.getRuntime().exec(script + adLogin);
             powerShellProcess.getOutputStream().close();
@@ -68,12 +70,13 @@ public class PowerShellApi implements PowerShellExecutor {
                 while ((line = stderr.readLine()) != null) {
                     log.warn("PowerShell error: " + line);
                 ***REMOVED***
+                unprocessedUsers.add(adLogin);
             ***REMOVED***
             stderr.close();
         ***REMOVED*** catch (Exception e) {
             throw new RuntimeException(e);
         ***REMOVED***
-
+        return unprocessedUsers;
     ***REMOVED***
 
 ***REMOVED***
