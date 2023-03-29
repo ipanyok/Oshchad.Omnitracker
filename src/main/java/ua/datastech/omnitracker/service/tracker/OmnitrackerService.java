@@ -42,7 +42,7 @@ public class OmnitrackerService {
     public void saveOmniBlockRequest(OmniTrackerRequest request) {
         SqlParameterSource namedParameters = new MapSqlParameterSource()
                 .addValue("objectId", request.getObjectID())
-                .addValue("action", parseServiceTypeId(request.getServiceTypeID()))
+                .addValue("action", ActionType.findActionByServiceTypeId(request.getServiceTypeID()))
                 .addValue("actionDate", java.sql.Date.valueOf(request.getAdditionalInfo().getDate().substring(0, request.getAdditionalInfo().getDate().indexOf("T"))))
                 .addValue("localDate", LocalDateTime.now());
         Integer execute = jdbcTemplate.execute("insert into OMNI_BLOCK_REQUEST (OBJECT_ID, ACTION, ACTION_DATE, CHANGED_AT) VALUES (:objectId, :action, :actionDate, :localDate)",
@@ -94,42 +94,6 @@ public class OmnitrackerService {
                 log.info("Attachment data for request " + request.getObjectID() + " was saved.");
             ***REMOVED***
         ***REMOVED***);
-    ***REMOVED***
-
-    private String parseServiceTypeId(String serviceTypeId) {
-        String result;
-        switch (serviceTypeId) {
-            case "127064969": {
-                result = ActionType.RE_BRANCH.name();
-                break;
-            ***REMOVED***
-            case "127609143": {
-                result = ActionType.DISABLE_USER.name();
-                break;
-            ***REMOVED***
-            case "127609144": {
-                result = ActionType.DISABLE_REGION.name();
-                break;
-            ***REMOVED***
-            case "127768030": {
-                result = ActionType.DISABLE_BY_FILE.name();
-                break;
-            ***REMOVED***
-            case "127791269": {
-                result = ActionType.ENABLE_USER.name();
-                break;
-            ***REMOVED***
-            case "127791270": {
-                result = ActionType.ENABLE_REGION.name();
-                break;
-            ***REMOVED***
-            case "127791271": {
-                result = ActionType.ENABLE_BY_FILE.name();
-                break;
-            ***REMOVED***
-            default: result = null;
-        ***REMOVED***
-        return result;
     ***REMOVED***
 
 ***REMOVED***
