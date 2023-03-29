@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import ua.datastech.omnitracker.model.dto.ActionType;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -15,12 +16,13 @@ import java.util.List;
 public class PowerShellLocal implements PowerShellExecutor {
 
     @Override
-    public void execute(String action, List<String> adLogins) {
+    public List<String> execute(String action, List<String> adLogins) {
         if (action.equals(ActionType.DISABLE_USER.name()) || action.equals(ActionType.DISABLE_REGION.name()) || action.equals(ActionType.DISABLE_BY_FILE.name())) {
             adLogins.forEach(s -> log.info("User " + s + " was blocked"));
         ***REMOVED***
         if (action.equals(ActionType.ENABLE_USER.name()) || action.equals(ActionType.ENABLE_REGION.name()) || action.equals(ActionType.ENABLE_BY_FILE.name())) {
             adLogins.forEach(s -> log.info("User " + s + " was enabled"));
         ***REMOVED***
+        return new ArrayList<>();
     ***REMOVED***
 ***REMOVED***

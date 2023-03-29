@@ -4,6 +4,6 @@ import java.util.List;
 
 public interface PowerShellExecutor {
 
-    void execute(String action, List<String> adLogins);
+    List<String> execute(String action, List<String> adLogins);
 
 ***REMOVED***
