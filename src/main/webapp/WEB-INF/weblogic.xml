@@ -4,15 +4,21 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://xmlns.oracle.com/weblogic/weblogic-web-app
         http://xmlns.oracle.com/weblogic/weblogic-web-app/1.4/weblogic-web-app.xsd">
-
     <wls:container-descriptor>
+        <wls:prefer-web-inf-classes>false</wls:prefer-web-inf-classes>
         <wls:prefer-application-packages>
-            <wls:package-name>org.slf4j.*</wls:package-name>
-            <wls:package-name>org.springframework.*</wls:package-name>
-            <wls:package-name>javax.validation.*</wls:package-name>
-            <wls:package-name>org.hibernate.validator.*</wls:package-name>
+            <wls:package-name>org.apache.commons.*</wls:package-name>
+            <wls:package-name>org.apache.poi.*</wls:package-name>
+            <wls:package-name>org.apache.xmlbeans.*</wls:package-name>
+            <wls:package-name>org.openxmlformats.*</wls:package-name>
+            <wls:package-name>schemaorg_apache_xmlbeans.*</wls:package-name>
         </wls:prefer-application-packages>
-        <wls:show-archived-real-path-enabled>true</wls:show-archived-real-path-enabled>
+        <wls:prefer-application-resources>
+            <wls:resource-name>schemaorg_apache_xmlbeans/system/sXMLCONFIG/TypeSystemHolder.class</wls:resource-name>
+            <wls:resource-name>schemaorg_apache_xmlbeans/system/sXMLLANG/TypeSystemHolder.class</wls:resource-name>
+            <wls:resource-name>schemaorg_apache_xmlbeans/system/sXMLSCHEMA/TypeSystemHolder.class</wls:resource-name>
+            <wls:resource-name>schemaorg_apache_xmlbeans/system/sXMLTOOLS/TypeSystemHolder.class</wls:resource-name>
+        </wls:prefer-application-resources>
     </wls:container-descriptor>
     <wls:context-root>/omnitracker</wls:context-root>
 

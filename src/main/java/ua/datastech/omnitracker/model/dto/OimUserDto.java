@@ -10,6 +10,7 @@ public class OimUserDto {
     private Long usrKey;
     private Long id;
     private String objectId;
+    private String sourceId;
     private String empNumber;
     private String mainBranch;
     private String tmpBranch;
