@@ -5,19 +5,22 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.*;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 import ua.datastech.omnitracker.model.omni.api.OimClosureRequest;
 import ua.datastech.omnitracker.model.omni.api.OimPickupRequest;
 import ua.datastech.omnitracker.model.omni.api.ResponseCodeEnum;
 import ua.datastech.omnitracker.service.jdbc.JdbcQueryService;
 
+import java.net.URI;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+
 
 @Profile("prod")
 @Service
@@ -67,14 +70,20 @@ public class OmnitrackerApi implements OmnitrackerApiService {
         log.info("call-get-attachment()... objectId: " + objectId);
         HttpHeaders headers = createHeaders(omniUser, omniPassword);
         HttpEntity requestEntity = new HttpEntity<>(headers);
-        Map<String, Long> params = new HashMap<>();
-        params.put("OID", oid);
-        ResponseEntity<String> response = restTemplate.exchange(omniGetAttachmentUrl, HttpMethod.GET, requestEntity, String.class, params);
+        URI uri = UriComponentsBuilder
+                .fromUri(URI.create(omniGetAttachmentUrl))
+                .queryParam("OID", oid)
+                .build()
+                .toUri();
+
+        restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
+        ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.GET, requestEntity, String.class);
         if (response.getStatusCode() != HttpStatus.OK) {
             log.error("Something went wrong. Status: " + response.getStatusCode());
             throw new RuntimeException("Error during send gey-attachment request to omnitracker: " + response.getBody());
         ***REMOVED***
         log.info("Get-attachment for " + objectId + " request was sent. Status: " + response.getStatusCode());
+        restTemplate.getMessageConverters().remove(0);
         return response.getBody();
     ***REMOVED***
 
