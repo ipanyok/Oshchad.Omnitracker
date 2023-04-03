@@ -18,6 +18,7 @@ public class OimUserDto {
     private String endDate;
     private Boolean isPickupSent;
     private Boolean isClosureSent;
+    private Boolean isInProcess;
     private String adLogin;
     private String action;
     private String actionDate;

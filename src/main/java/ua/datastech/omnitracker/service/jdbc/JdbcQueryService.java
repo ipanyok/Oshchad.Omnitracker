@@ -47,7 +47,7 @@ public class JdbcQueryService {
     private final static String OMNI_FIND_USER_TO_BLOCK_QUERY = "select * " +
             "from OMNI_BLOCK_REQUEST B, OMNI_BLOCK_DATA D " +
             "where B.ID = D.OMNI_BLOCK_REQUEST_ID " +
-            "AND IS_PROCESSED = 0 AND ACTION_DATE = :actionDate AND OBJECT_ID = :objectId";
+            "AND IS_PROCESSED = 0 AND IS_IN_PROCESS = 0 AND ACTION_DATE = :actionDate AND OBJECT_ID = :objectId";
 
     private final static String OMNI_FIND_USER_TO_BLOCK_ATTACHMENT_QUERY = "select * " +
             "from OMNI_BLOCK_REQUEST B, OMNI_BLOCK_ATTACHMENT D " +
@@ -74,6 +74,10 @@ public class JdbcQueryService {
     private final static String OMNI_UPDATE_ATTACHMENT_QUERY = "update OMNI_BLOCK_ATTACHMENT set " +
             "ATTACHMENT = :attachment " +
             "WHERE ID = :id";
+
+    private final static String OMNI_UPDATE_REQUEST_IN_PROCESS_QUERY = "update OMNI_BLOCK_REQUEST set " +
+            "IS_IN_PROCESS = 1 " +
+            "WHERE OBJECT_ID = :objectId";
 
     private final static String OIM_FIND_UNPROCESSED_USERS_QUERY = "select USR_KEY, USR_EMP_NO, USR_UDF_OBJECTID from usr where USR_UDF_OBJECTID is not null";
 
@@ -199,6 +203,7 @@ public class JdbcQueryService {
                 .actionDate(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(rs.getTimestamp("ACTION_DATE")))
                 .isPickupSent(rs.getBoolean("IS_PICKUP_SENT"))
                 .isClosureSent(rs.getBoolean("IS_CLOSURE_SENT"))
+                .isInProcess(rs.getBoolean("IS_IN_PROCESS"))
                 .build());
     ***REMOVED***
 
@@ -271,6 +276,12 @@ public class JdbcQueryService {
                 .addValue("id", id)
                 .addValue("attachment", attachment);
         return jdbcTemplate.execute(OMNI_UPDATE_ATTACHMENT_QUERY, namedParametersForUpdate, PreparedStatement::executeUpdate);
+    ***REMOVED***
+
+    public Integer updateRequestInProcess(String objectId) {
+        SqlParameterSource namedParametersForUpdate = new MapSqlParameterSource()
+                .addValue("objectId", objectId);
+        return jdbcTemplate.execute(OMNI_UPDATE_REQUEST_IN_PROCESS_QUERY, namedParametersForUpdate, PreparedStatement::executeUpdate);
     ***REMOVED***
 
     public List<OimUserDto> findOimUnprocessedUsers() {

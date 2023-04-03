@@ -17,6 +17,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -39,7 +41,7 @@ public class OmnitrackerBlockJob {
         List<OimUserDto> omniData = jdbcQueryService.findAllUnprocessedBlockRequests();
         omniData.forEach(oimUserDto -> {
 
-            if(checkIfDateExpired(oimUserDto)) {
+            if(!oimUserDto.getIsInProcess() && checkIfDateExpired(oimUserDto)) {
                 return;
             ***REMOVED***
 
@@ -74,16 +76,23 @@ public class OmnitrackerBlockJob {
                 omnitrackerApiService.callOmniTrackerClosureService(null, oimUserDto.getObjectId(), ResponseCodeEnum.SC_CC_REJECTED, "Відхилено. Не знайдено жодного користувача в AD.", "");
                 jdbcQueryService.updateOmniBlockRequestQuery(oimUserDto.getObjectId(), Collections.singletonMap("IS_PROCESSED", "1"));
             ***REMOVED***
+
+            ExecutorService executorService = Executors.newCachedThreadPool();
+            AtomicReference<List<String>> unprocessedUsers = new AtomicReference<>(users);
             if (users != null && !users.isEmpty()) {
-                List<String> unprocessedUsers = powerShellExecutor.execute(oimUserDto.getAction(), users);
-                String result;
-                if (unprocessedUsers.isEmpty()) {
-                    result = "Вирішено";
-                ***REMOVED*** else {
-                    result = "Вирішено. \nНе оброблені користувачі: \n" + unprocessedUsers;
-                ***REMOVED***
-                omnitrackerApiService.callOmniTrackerClosureService(null, oimUserDto.getObjectId(), ResponseCodeEnum.SC_CC_RESOLVED, result, "");
-                jdbcQueryService.updateOmniBlockRequestQuery(oimUserDto.getObjectId(), Collections.singletonMap("IS_PROCESSED", "1"));
+                executorService.execute(() -> {
+                    jdbcQueryService.updateRequestInProcess(oimUserDto.getObjectId());
+                    unprocessedUsers.set(powerShellExecutor.execute(oimUserDto.getAction(), unprocessedUsers.get()));
+                    String result;
+                    if (unprocessedUsers.get().isEmpty()) {
+                        result = "Вирішено";
+                    ***REMOVED*** else {
+                        result = "Вирішено. \nНе оброблені користувачі: \n" + unprocessedUsers;
+                    ***REMOVED***
+                    omnitrackerApiService.callOmniTrackerClosureService(null, oimUserDto.getObjectId(), ResponseCodeEnum.SC_CC_RESOLVED, result, "");
+                    jdbcQueryService.updateOmniBlockRequestQuery(oimUserDto.getObjectId(), Collections.singletonMap("IS_PROCESSED", "1"));
+                ***REMOVED***);
+                executorService.shutdown();
             ***REMOVED***
         ***REMOVED***);
     ***REMOVED***
@@ -112,6 +121,8 @@ public class OmnitrackerBlockJob {
             ***REMOVED***
 
             List<OimUserDto> attachmentData = jdbcQueryService.findAttachment(LocalDateTime.now(), oimUserDto.getObjectId());
+
+            // todo make separate thread too
 
             AtomicBoolean isProcessed = new AtomicBoolean(false);
             AtomicReference<List<String>> unprocessedUsers = new AtomicReference<>();
