@@ -2,6 +2,7 @@ package ua.datastech.omnitracker.service.tracker;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -18,6 +19,9 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class OmnitrackerService {
+
+    @Value("${spring.profiles.active***REMOVED***")
+    private String profile;
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
@@ -42,7 +46,7 @@ public class OmnitrackerService {
     public void saveOmniBlockRequest(OmniTrackerRequest request) {
         SqlParameterSource namedParameters = new MapSqlParameterSource()
                 .addValue("objectId", request.getObjectID())
-                .addValue("action", ActionType.findActionByServiceTypeId(request.getServiceTypeID()))
+                .addValue("action", profile.equals("prod") ? ActionType.findActionByServiceTypeIdProd(request.getServiceTypeID()) : ActionType.findActionByServiceTypeIdTest(request.getServiceTypeID()))
                 .addValue("actionDate", java.sql.Date.valueOf(request.getAdditionalInfo().getDate().substring(0, request.getAdditionalInfo().getDate().indexOf("T"))))
                 .addValue("localDate", LocalDateTime.now());
         Integer execute = jdbcTemplate.execute("insert into OMNI_BLOCK_REQUEST (OBJECT_ID, ACTION, ACTION_DATE, CHANGED_AT) VALUES (:objectId, :action, :actionDate, :localDate)",

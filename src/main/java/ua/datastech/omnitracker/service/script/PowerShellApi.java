@@ -15,35 +15,34 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@Profile("prod")
+@Profile({"prod", "test"***REMOVED***)
 public class PowerShellApi implements PowerShellExecutor {
 
-    @Value("${power.shell.user***REMOVED***")
+    @Value("${powershell.user***REMOVED***")
     private String psUser;
 
-    @Value("${power.shell.password***REMOVED***")
+    @Value("${powershell.password***REMOVED***")
     private String psPassword;
 
-    private static final String COMMAND_DISABLE = "powershell.exe -command Get-ADUser -Identity ";
-    private static final String COMMAND_ENABLE = "powershell.exe -command Get-ADUser -Identity ";
-    private static final String CONNECT = "powershell.exe -command $User = ***REMOVED***"oschadbank***REMOVED******REMOVED***%s***REMOVED***"***REMOVED***n" +
-            "$PWord = ConvertTo-SecureString -String ***REMOVED***"%s***REMOVED***" -AsPlainText -Force***REMOVED***n" +
-            "$Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $User, $PWord***REMOVED***n" +
-            "Import-Module ActiveDirectory***REMOVED***n";
+    @Value("${powershell.command.disable***REMOVED***")
+    private String commandDisable;
+
+    @Value("${powershell.command.enable***REMOVED***")
+    private String commandEnable;
+
+    private static final String COMMAND = "powershell.exe -command  ***REMOVED***"& {$username = 'oschadbank***REMOVED******REMOVED***%s'; $password = ConvertTo-SecureString '%s' -AsPlainText -Force; $credential = New-Object System.Management.Automation.PSCredential($username, $password); Import-Module ActiveDirectory; %s %s -Credential $credential ***REMOVED******REMOVED***"***REMOVED***n";
 
     @Override
     public List<String> execute(String action, List<String> adLogins) {
         Process powerShellProcess = null;
         List<String> unprocessedUsers = new ArrayList<>();
         try {
-            powerShellProcess = Runtime.getRuntime().exec(String.format(CONNECT, psUser, psPassword));
 
-            // todo return non blocked
             if (action.equals(ActionType.DISABLE_USER.name()) || action.equals(ActionType.DISABLE_REGION.name()) || action.equals(ActionType.DISABLE_BY_FILE.name())) {
-                adLogins.forEach(login -> runPowerShell(COMMAND_DISABLE, login, unprocessedUsers));
+                adLogins.forEach(login -> runPowerShell(String.format(COMMAND, psUser, psPassword, commandDisable, login), login, unprocessedUsers));
             ***REMOVED***
             if (action.equals(ActionType.ENABLE_USER.name()) || action.equals(ActionType.ENABLE_REGION.name()) || action.equals(ActionType.ENABLE_BY_FILE.name())) {
-                adLogins.forEach(login -> runPowerShell(COMMAND_ENABLE, login, unprocessedUsers));
+                adLogins.forEach(login -> runPowerShell(String.format(COMMAND, psUser, psPassword, commandEnable, login), login, unprocessedUsers));
             ***REMOVED***
 
         ***REMOVED*** catch (Exception e) {
@@ -59,7 +58,7 @@ public class PowerShellApi implements PowerShellExecutor {
 
     private List<String> runPowerShell(String script, String adLogin, List<String> unprocessedUsers) {
         try {
-            Process powerShellProcess = Runtime.getRuntime().exec(script + adLogin);
+            Process powerShellProcess = Runtime.getRuntime().exec(script);
             powerShellProcess.getOutputStream().close();
             String line;
 
