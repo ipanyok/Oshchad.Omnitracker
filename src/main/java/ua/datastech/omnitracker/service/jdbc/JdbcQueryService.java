@@ -10,9 +10,12 @@ import ua.datastech.omnitracker.model.dto.OimUserDto;
 import java.sql.PreparedStatement;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static java.time.temporal.ChronoUnit.MINUTES;
 
 @Service
 @RequiredArgsConstructor
@@ -51,7 +54,7 @@ public class JdbcQueryService {
             "where B.ID = D.OMNI_BLOCK_REQUEST_ID " +
             "AND IS_PROCESSED = 0 AND ACTION_DATE = :actionDate AND OBJECT_ID = :objectId";
 
-    private final static String OMNI_FIND_ATTACHMENT_QUERY = "select * " +
+    private final static String OMNI_FIND_ATTACHMENT_QUERY = "select d.id attachment_id, d.*, b.* " +
             "from OMNI_BLOCK_REQUEST B, OMNI_BLOCK_ATTACHMENT D " +
             "where B.ID = D.OMNI_BLOCK_REQUEST_ID " +
             "AND IS_PROCESSED = 0 AND OBJECT_ID = :objectId";
@@ -70,7 +73,7 @@ public class JdbcQueryService {
 
     private final static String OMNI_UPDATE_ATTACHMENT_QUERY = "update OMNI_BLOCK_ATTACHMENT set " +
             "ATTACHMENT = :attachment " +
-            "WHERE OMNI_BLOCK_REQUEST_ID = :omniBlockRequestId";
+            "WHERE ID = :id";
 
     private final static String OIM_FIND_UNPROCESSED_USERS_QUERY = "select USR_KEY, USR_EMP_NO, USR_UDF_OBJECTID from usr where USR_UDF_OBJECTID is not null";
 
@@ -115,7 +118,7 @@ public class JdbcQueryService {
             "(select act.act_key***REMOVED***n" +
             "from act***REMOVED***n" +
             "where (to_date(sysdate, 'dd.mm.yyyy') between to_date(ORG_UDF_FROMDATE, 'dd.mm.yyyy') and to_date(nvl(ORG_UDF_TODATE, sysdate + 1), 'dd.mm.yyyy'))***REMOVED***n" +
-            "start with ORG_UDF_HRORGCODE IN (:sourceIds)***REMOVED***n" +
+            "start with ORG_UDF_HRORGCODE = :sourceId***REMOVED***n" +
             "connect by prior ORG_UDF_HRORGCODE = ORG_UDF_HRPARENTORGCODE)";
 
     private final static String OIM_FIND_USR_TO_ENABLE_BY_SOURCE_QUERY = "SELECT distinct ad.ud_ADUSER_UID AD_LOGIN, 'UPDATE USR SET USR_STATUS = ''Active'' where usr_key = '''||usr.usr_key||''';' enabled_usr,***REMOVED***n" +
@@ -136,7 +139,7 @@ public class JdbcQueryService {
             "from act***REMOVED***n" +
             "where (to_date(sysdate, 'dd.mm.yyyy') between to_date(ORG_UDF_FROMDATE, 'dd.mm.yyyy') and to_date(nvl(ORG_UDF_TODATE, sysdate + 1), 'dd.mm.yyyy'))***REMOVED***n" +
             "***REMOVED***n" +
-            "start with ORG_UDF_HRORGCODE IN (:sourceIds)***REMOVED***n" +
+            "start with ORG_UDF_HRORGCODE = :sourceId***REMOVED***n" +
             "connect by prior ORG_UDF_HRORGCODE = ORG_UDF_HRPARENTORGCODE)";
 
     public void updateOmniRequestQuery(String empNumber, String objectId, Map<String, String> valuesToUpdate) {
@@ -164,15 +167,15 @@ public class JdbcQueryService {
         return jdbcTemplate.query(OIM_FIND_USR_TO_ENABLE_BY_EMP_QUERY, params, (rs, rowNum) -> rs.getString("AD_LOGIN"));
     ***REMOVED***
 
-    public List<String> findUsersToBlockBySourceId(List<String> sourceIds) {
+    public List<String> findUsersToBlockBySourceId(String sourceId) {
         SqlParameterSource params = new MapSqlParameterSource()
-                .addValue("sourceIds", sourceIds);
+                .addValue("sourceId", sourceId);
         return jdbcTemplate.query(OIM_FIND_USR_TO_BLOCK_BY_SOURCE_QUERY, params, (rs, rowNum) -> rs.getString("AD_LOGIN"));
     ***REMOVED***
 
-    public List<String> findUsersToEnableBySourceId(List<String> sourceIds) {
+    public List<String> findUsersToEnableBySourceId(String sourceId) {
         SqlParameterSource params = new MapSqlParameterSource()
-                .addValue("sourceIds", sourceIds);
+                .addValue("sourceId", sourceId);
         return jdbcTemplate.query(OIM_FIND_USR_TO_ENABLE_BY_SOURCE_QUERY, params, (rs, rowNum) -> rs.getString("AD_LOGIN"));
     ***REMOVED***
 
@@ -193,7 +196,7 @@ public class JdbcQueryService {
         return jdbcTemplate.query(OMNI_FIND_ALL_BLOCK_UNPROCESSED_REQUESTS_QUERY, (rs, rowNum) -> OimUserDto.builder()
                 .objectId(rs.getString("OBJECT_ID"))
                 .action(rs.getString("ACTION"))
-                .actionDate(new SimpleDateFormat("yyyy-MM-dd").format(rs.getDate("ACTION_DATE")))
+                .actionDate(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(rs.getTimestamp("ACTION_DATE")))
                 .isPickupSent(rs.getBoolean("IS_PICKUP_SENT"))
                 .isClosureSent(rs.getBoolean("IS_CLOSURE_SENT"))
                 .build());
@@ -203,16 +206,16 @@ public class JdbcQueryService {
         return jdbcTemplate.query(OMNI_FIND_ALL_BLOCK_ATTACHMENT_QUERY, (rs, rowNum) -> OimUserDto.builder()
                 .objectId(rs.getString("OBJECT_ID"))
                 .action(rs.getString("ACTION"))
-                .actionDate(new SimpleDateFormat("yyyy-MM-dd").format(rs.getDate("ACTION_DATE")))
+                .actionDate(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(rs.getTimestamp("ACTION_DATE")))
                 .isPickupSent(rs.getBoolean("IS_PICKUP_SENT"))
                 .isClosureSent(rs.getBoolean("IS_CLOSURE_SENT"))
                 .id(rs.getLong("ID"))
                 .build());
     ***REMOVED***
 
-    public List<OimUserDto> findUsersToProcess(LocalDate date, String objectId) {
+    public List<OimUserDto> findUsersToProcess(LocalDateTime date, String objectId) {
         SqlParameterSource namedParameters = new MapSqlParameterSource()
-                .addValue("actionDate", date)
+                .addValue("actionDate", date.truncatedTo(MINUTES))
                 .addValue("objectId", objectId);
         return jdbcTemplate.query(OMNI_FIND_USER_TO_BLOCK_QUERY, namedParameters, (rs, rowNum) -> OimUserDto.builder()
                 .empNumber(rs.getString("EMP_NUMBER"))
@@ -222,9 +225,9 @@ public class JdbcQueryService {
                 .build());
     ***REMOVED***
 
-    public List<OimUserDto> findAttachment(LocalDate date, String objectId) {
+    public List<OimUserDto> findAttachment(LocalDateTime date, String objectId) {
         SqlParameterSource namedParameters = new MapSqlParameterSource()
-                .addValue("actionDate", date)
+                .addValue("actionDate", date.truncatedTo(MINUTES))
                 .addValue("objectId", objectId);
         return jdbcTemplate.query(OMNI_FIND_USER_TO_BLOCK_ATTACHMENT_QUERY, namedParameters, (rs, rowNum) -> OimUserDto.builder()
                 .attachment(rs.getString("ATTACHMENT"))
@@ -240,6 +243,7 @@ public class JdbcQueryService {
                 .attachment(rs.getString("ATTACHMENT"))
                 .oid(rs.getLong("OID"))
                 .objectId(rs.getString("OBJECT_ID"))
+                .id(rs.getLong("attachment_id"))
                 .build());
     ***REMOVED***
 
@@ -262,9 +266,9 @@ public class JdbcQueryService {
         return jdbcTemplate.execute(OIM_UPDATE_USER_BY_EMP_NUMBER_QUERY, namedParametersForUpdate, PreparedStatement::executeUpdate);
     ***REMOVED***
 
-    public Integer updateAttachments(Long objectId, String attachment) {
+    public Integer updateAttachments(Long id, String attachment) {
         SqlParameterSource namedParametersForUpdate = new MapSqlParameterSource()
-                .addValue("omniBlockRequestId", objectId)
+                .addValue("id", id)
                 .addValue("attachment", attachment);
         return jdbcTemplate.execute(OMNI_UPDATE_ATTACHMENT_QUERY, namedParametersForUpdate, PreparedStatement::executeUpdate);
     ***REMOVED***

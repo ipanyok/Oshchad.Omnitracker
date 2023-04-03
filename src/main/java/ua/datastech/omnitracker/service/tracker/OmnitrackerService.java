@@ -13,6 +13,7 @@ import ua.datastech.omnitracker.model.oim.OmniTrackerRequest;
 
 import java.sql.PreparedStatement;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -44,10 +45,18 @@ public class OmnitrackerService {
     ***REMOVED***
 
     public void saveOmniBlockRequest(OmniTrackerRequest request) {
+        LocalDateTime parseTime = LocalDateTime.parse(request.getAdditionalInfo().getDate().substring(0, 20));
+        if (parseTime.getMinute() != 0) {
+            int minutes = 10 - parseTime.getMinute();
+            while (minutes < 0) {
+                minutes = minutes + 10;
+            ***REMOVED***
+            parseTime = parseTime.plusMinutes(minutes);
+        ***REMOVED***
         SqlParameterSource namedParameters = new MapSqlParameterSource()
                 .addValue("objectId", request.getObjectID())
                 .addValue("action", profile.equals("prod") ? ActionType.findActionByServiceTypeIdProd(request.getServiceTypeID()) : ActionType.findActionByServiceTypeIdTest(request.getServiceTypeID()))
-                .addValue("actionDate", java.sql.Date.valueOf(request.getAdditionalInfo().getDate().substring(0, request.getAdditionalInfo().getDate().indexOf("T"))))
+                .addValue("actionDate", java.sql.Timestamp.valueOf(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(parseTime)))
                 .addValue("localDate", LocalDateTime.now());
         Integer execute = jdbcTemplate.execute("insert into OMNI_BLOCK_REQUEST (OBJECT_ID, ACTION, ACTION_DATE, CHANGED_AT) VALUES (:objectId, :action, :actionDate, :localDate)",
                 namedParameters,
