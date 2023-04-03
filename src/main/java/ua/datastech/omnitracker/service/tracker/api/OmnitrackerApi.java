@@ -22,10 +22,10 @@ import java.util.Base64;
 import java.util.Collections;
 
 
-@Profile("prod")
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Profile({"prod", "test"***REMOVED***)
 public class OmnitrackerApi implements OmnitrackerApiService {
 
     @Value("${omnitracker_closure_url***REMOVED***")
@@ -49,7 +49,7 @@ public class OmnitrackerApi implements OmnitrackerApiService {
 
     @Override
     public void callOmniTrackerPickupService(String empNumber, String objectId) {
-        log.info("call-pickup-ack()... objectId: " + objectId);
+        log.info("send call-pickup-ack()... objectId: " + objectId);
         OimPickupRequest oimPickupRequest = setupOimPickupRequest(objectId, objectId);
         HttpEntity request = new HttpEntity<>(oimPickupRequest, createHeaders(omniUser, omniPassword));
         ResponseEntity<String> response = restTemplate.postForEntity(omniPickupUrl, request, String.class);
@@ -67,7 +67,7 @@ public class OmnitrackerApi implements OmnitrackerApiService {
 
     @Override
     public String callOmniTrackerGetAttachmentService(Long oid, String objectId) {
-        log.info("call-get-attachment()... objectId: " + objectId);
+        log.info("send call-get-attachment()... objectId: " + objectId);
         HttpHeaders headers = createHeaders(omniUser, omniPassword);
         HttpEntity requestEntity = new HttpEntity<>(headers);
         URI uri = UriComponentsBuilder
@@ -89,7 +89,7 @@ public class OmnitrackerApi implements OmnitrackerApiService {
 
     @Override
     public void callOmniTrackerClosureService(String empNumber, String objectId, ResponseCodeEnum closureCode, String solution, String solutionSpecification) {
-        log.info("call-closure-req()... objectId: " + objectId);
+        log.info("send call-closure-req()... objectId: " + objectId);
         OimClosureRequest oimClosureRequest = setupOimClosureRequest(objectId, objectId, closureCode, solution, solutionSpecification);
         HttpEntity request = new HttpEntity<>(oimClosureRequest, createHeaders(omniUser, omniPassword));
         ResponseEntity<String> response = restTemplate.postForEntity(omniClosureUrl, request, String.class);
