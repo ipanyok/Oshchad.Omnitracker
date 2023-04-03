@@ -51,7 +51,7 @@ public class OmnitrackerService {
             while (minutes < 0) {
                 minutes = minutes + 10;
             ***REMOVED***
-            parseTime = parseTime.plusMinutes(minutes);
+            parseTime = parseTime.plusMinutes(minutes).withSecond(0);
         ***REMOVED***
         SqlParameterSource namedParameters = new MapSqlParameterSource()
                 .addValue("objectId", request.getObjectID())
