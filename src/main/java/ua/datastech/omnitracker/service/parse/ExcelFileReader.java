@@ -1,6 +1,7 @@
 package ua.datastech.omnitracker.service.parse;
 
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -9,7 +10,12 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
+@Slf4j
 public class ExcelFileReader {
+
+    private final static int ROW_NUMBER = 2;
+    private final static int CELL_NUMBER = 2;
+    private final static int SHEET_NUMBER = 0;
 
     @SneakyThrows
     public static List<String> read(String attachment) {
@@ -18,7 +24,7 @@ public class ExcelFileReader {
         InputStream input = new ByteArrayInputStream(decode);
 
         Workbook workbook = new XSSFWorkbook(input);
-        Sheet sheet = workbook.getSheetAt(0);
+        Sheet sheet = workbook.getSheetAt(SHEET_NUMBER);
 
         Map<Integer, List<String>> data = new HashMap<>();
         int i = 0;
@@ -48,11 +54,20 @@ public class ExcelFileReader {
             ***REMOVED***
             i++;
         ***REMOVED***
+
         List<String> logins = new ArrayList<>();
-        for (int row = 2; row < sheet.getPhysicalNumberOfRows(); row++) {
-            Cell cell = sheet.getRow(row).getCell(2);
-            if (cell != null && cell.getStringCellValue() != null && !cell.getStringCellValue().equals("")) {
-                logins.add(cell.getStringCellValue());
+
+        for (int row = ROW_NUMBER; row < sheet.getPhysicalNumberOfRows(); row++) {
+            Cell cell = null;
+            try {
+                if (sheet != null && sheet.getRow(row) != null) {
+                    cell = sheet.getRow(row).getCell(CELL_NUMBER);
+                    if (cell != null && cell.getStringCellValue() != null && !cell.getStringCellValue().equals("")) {
+                        logins.add(cell.getStringCellValue());
+                    ***REMOVED***
+                ***REMOVED***
+            ***REMOVED*** catch (Exception e) {
+                log.error(String.format("Can't parse row %s, cell %s: ", row, cell) + e.getMessage());
             ***REMOVED***
         ***REMOVED***
 

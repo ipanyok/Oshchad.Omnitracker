@@ -34,17 +34,30 @@ public class PowerShellApi implements PowerShellExecutor {
 
     @Override
     public List<String> execute(String action, List<String> adLogins) {
-        Process powerShellProcess = null;
         List<String> unprocessedUsers = new ArrayList<>();
+        if (action.equals(ActionType.DISABLE_USER.name()) || action.equals(ActionType.DISABLE_REGION.name()) || action.equals(ActionType.DISABLE_BY_FILE.name())) {
+            adLogins.forEach(login -> runPowerShell(String.format(COMMAND, psUser, psPassword, commandDisable, login), login, unprocessedUsers));
+        ***REMOVED***
+        if (action.equals(ActionType.ENABLE_USER.name()) || action.equals(ActionType.ENABLE_REGION.name()) || action.equals(ActionType.ENABLE_BY_FILE.name())) {
+            adLogins.forEach(login -> runPowerShell(String.format(COMMAND, psUser, psPassword, commandEnable, login), login, unprocessedUsers));
+        ***REMOVED***
+        return unprocessedUsers;
+    ***REMOVED***
+
+    private List<String> runPowerShell(String script, String adLogin, List<String> unprocessedUsers) {
+        Process powerShellProcess = null;
         try {
+            powerShellProcess = Runtime.getRuntime().exec(script);
+            powerShellProcess.getOutputStream().close();
 
-            if (action.equals(ActionType.DISABLE_USER.name()) || action.equals(ActionType.DISABLE_REGION.name()) || action.equals(ActionType.DISABLE_BY_FILE.name())) {
-                adLogins.forEach(login -> runPowerShell(String.format(COMMAND, psUser, psPassword, commandDisable, login), login, unprocessedUsers));
+            BufferedReader stderr = new BufferedReader(new InputStreamReader(powerShellProcess.getErrorStream()));
+            if (stderr.readLine() == null) {
+                log.info("User " + adLogin + " was processed.");
+            ***REMOVED*** else {
+                log.error(String.format("Can't processed user [%s]", adLogin));
+                unprocessedUsers.add(adLogin);
             ***REMOVED***
-            if (action.equals(ActionType.ENABLE_USER.name()) || action.equals(ActionType.ENABLE_REGION.name()) || action.equals(ActionType.ENABLE_BY_FILE.name())) {
-                adLogins.forEach(login -> runPowerShell(String.format(COMMAND, psUser, psPassword, commandEnable, login), login, unprocessedUsers));
-            ***REMOVED***
-
+            stderr.close();
         ***REMOVED*** catch (Exception e) {
             log.error("Error when run powershell command with ad module: ", e);
         ***REMOVED*** finally {
@@ -52,28 +65,6 @@ public class PowerShellApi implements PowerShellExecutor {
                 powerShellProcess.getOutputStream().close();
             ***REMOVED*** catch (Exception ex) {
             ***REMOVED***
-        ***REMOVED***
-        return unprocessedUsers;
-    ***REMOVED***
-
-    private List<String> runPowerShell(String script, String adLogin, List<String> unprocessedUsers) {
-        try {
-            Process powerShellProcess = Runtime.getRuntime().exec(script);
-            powerShellProcess.getOutputStream().close();
-            String line;
-
-            BufferedReader stderr = new BufferedReader(new InputStreamReader(powerShellProcess.getErrorStream()));
-            if (stderr.readLine() == null) {
-                log.info("User " + adLogin + " was processed.");
-            ***REMOVED*** else {
-                while ((line = stderr.readLine()) != null) {
-                    log.warn("PowerShell error: " + line);
-                ***REMOVED***
-                unprocessedUsers.add(adLogin);
-            ***REMOVED***
-            stderr.close();
-        ***REMOVED*** catch (Exception e) {
-            throw new RuntimeException(e);
         ***REMOVED***
         return unprocessedUsers;
     ***REMOVED***

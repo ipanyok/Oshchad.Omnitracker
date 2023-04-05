@@ -39,7 +39,7 @@ public class OmnitrackerBlockJob {
         List<OimUserDto> omniData = jdbcQueryService.findAllUnprocessedBlockRequests();
         omniData.forEach(oimUserDto -> {
 
-            if(checkIfDateExpired(oimUserDto)) {
+            if (checkIfDateExpired(oimUserDto)) {
                 return;
             ***REMOVED***
 
@@ -59,14 +59,24 @@ public class OmnitrackerBlockJob {
                 List<String> sourceIds = usersDataToBlock.stream().map(OimUserDto::getSourceId).collect(Collectors.toList());
                 users = new ArrayList<>();
                 for (String sourceId : sourceIds) {
-                    users.addAll(jdbcQueryService.findUsersToBlockBySourceId(sourceId));
+                    String parentOrgCode = jdbcQueryService.checkSourceId(sourceId);
+                    if (parentOrgCode.equals(sourceId)) {
+                        users.addAll(jdbcQueryService.findUsersToBlockBySourceIdIfEqual(sourceId));
+                    ***REMOVED*** else {
+                        users.addAll(jdbcQueryService.findUsersToBlockBySourceIdIfNotEqual(sourceId));
+                    ***REMOVED***
                 ***REMOVED***
             ***REMOVED***
             if (oimUserDto.getAction().equals(ActionType.ENABLE_REGION.name())) {
                 List<String> sourceIds = usersDataToBlock.stream().map(OimUserDto::getSourceId).collect(Collectors.toList());
                 users = new ArrayList<>();
                 for (String sourceId : sourceIds) {
-                    users.addAll(jdbcQueryService.findUsersToEnableBySourceId(sourceId));
+                    String parentOrgCode = jdbcQueryService.checkSourceId(sourceId);
+                    if (parentOrgCode.equals(sourceId)) {
+                        users.addAll(jdbcQueryService.findUsersToEnableBySourceIdIfEqual(sourceId));
+                    ***REMOVED*** else {
+                        users.addAll(jdbcQueryService.findUsersToEnableBySourceIdIfNotEqual(sourceId));
+                    ***REMOVED***
                 ***REMOVED***
             ***REMOVED***
 
@@ -93,7 +103,7 @@ public class OmnitrackerBlockJob {
         List<OimUserDto> omniData = jdbcQueryService.findAllUnprocessedAttachmentsRequests();
         omniData.forEach(oimUserDto -> {
 
-            if(checkIfDateExpired(oimUserDto)) {
+            if (checkIfDateExpired(oimUserDto)) {
                 return;
             ***REMOVED***
 
@@ -108,6 +118,7 @@ public class OmnitrackerBlockJob {
                         ***REMOVED***
                     ***REMOVED***);
                     omnitrackerApiService.callOmniTrackerPickupService(null, oimUserDto.getObjectId());
+                    oimUserDto.setIsPickupSent(true);
                 ***REMOVED***
             ***REMOVED***
 
@@ -118,7 +129,14 @@ public class OmnitrackerBlockJob {
             attachmentData.forEach(data -> {
                 List<String> users = ExcelFileReader.read(data.getAttachment());
                 if (users != null && !users.isEmpty()) {
-                    unprocessedUsers.set(powerShellExecutor.execute(data.getAction(), users));
+                    List<String> existingUnprocessedUsers = unprocessedUsers.get();
+                    List<String> scriptUnprocessedUsers = powerShellExecutor.execute(data.getAction(), users);
+                    if (existingUnprocessedUsers == null) {
+                        unprocessedUsers.set(scriptUnprocessedUsers);
+                    ***REMOVED*** else {
+                        existingUnprocessedUsers.addAll(scriptUnprocessedUsers);
+                        unprocessedUsers.set(existingUnprocessedUsers);
+                    ***REMOVED***
                     isProcessed.set(true);
                 ***REMOVED***
             ***REMOVED***);
@@ -131,7 +149,7 @@ public class OmnitrackerBlockJob {
                 ***REMOVED***
                 omnitrackerApiService.callOmniTrackerClosureService(null, oimUserDto.getObjectId(), ResponseCodeEnum.SC_CC_RESOLVED, result, "");
                 jdbcQueryService.updateOmniBlockRequestQuery(oimUserDto.getObjectId(), Collections.singletonMap("IS_PROCESSED", "1"));
-            ***REMOVED*** else if (oimUserDto.getIsPickupSent()) {
+            ***REMOVED*** else if ((attachmentData != null && !attachmentData.isEmpty()) && oimUserDto.getIsPickupSent()) {
                 omnitrackerApiService.callOmniTrackerClosureService(null, oimUserDto.getObjectId(), ResponseCodeEnum.SC_CC_REJECTED, "Відхилено. Не знайдено жодного користувача в AD або вкладення не містить логінів.", "");
                 jdbcQueryService.updateOmniBlockRequestQuery(oimUserDto.getObjectId(), Collections.singletonMap("IS_PROCESSED", "1"));
             ***REMOVED***
