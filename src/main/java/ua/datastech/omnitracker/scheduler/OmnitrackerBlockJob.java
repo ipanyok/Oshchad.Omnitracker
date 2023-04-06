@@ -6,6 +6,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import ua.datastech.omnitracker.model.dto.ActionType;
 import ua.datastech.omnitracker.model.dto.OimUserDto;
+import ua.datastech.omnitracker.model.oim.ProcessedUser;
 import ua.datastech.omnitracker.model.omni.api.ResponseCodeEnum;
 import ua.datastech.omnitracker.service.jdbc.JdbcQueryService;
 import ua.datastech.omnitracker.service.parse.ExcelFileReader;
@@ -48,7 +49,7 @@ public class OmnitrackerBlockJob {
             ***REMOVED***
 
             List<OimUserDto> usersDataToBlock = jdbcQueryService.findUsersToProcess(LocalDateTime.now(), oimUserDto.getObjectId());
-            List<String> users = null;
+            List<ProcessedUser> users = null;
             if (oimUserDto.getAction().equals(ActionType.DISABLE_USER.name())) {
                 users = jdbcQueryService.findUsersToBlockByEmployeeNumber(usersDataToBlock.stream().map(OimUserDto::getEmpNumber).collect(Collectors.toList()));
             ***REMOVED***
@@ -128,9 +129,15 @@ public class OmnitrackerBlockJob {
             AtomicReference<List<String>> unprocessedUsers = new AtomicReference<>();
             attachmentData.forEach(data -> {
                 List<String> users = ExcelFileReader.read(data.getAttachment());
+
+                //todo tmp solution  - need also scripts for process OIM user
+                List<ProcessedUser> processedUsers = new ArrayList<>();
+                users.forEach(user -> processedUsers.add(ProcessedUser.builder().adLogin(user).build()));
+                //
+
                 if (users != null && !users.isEmpty()) {
                     List<String> existingUnprocessedUsers = unprocessedUsers.get();
-                    List<String> scriptUnprocessedUsers = powerShellExecutor.execute(data.getAction(), users);
+                    List<String> scriptUnprocessedUsers = powerShellExecutor.execute(data.getAction(), processedUsers);
                     if (existingUnprocessedUsers == null) {
                         unprocessedUsers.set(scriptUnprocessedUsers);
                     ***REMOVED*** else {
