@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Service;
 import ua.datastech.omnitracker.model.dto.OimUserDto;
+import ua.datastech.omnitracker.model.oim.ProcessedUser;
 
 import java.sql.PreparedStatement;
 import java.text.SimpleDateFormat;
@@ -79,7 +80,7 @@ public class JdbcQueryService {
 
     private final static String OIM_FIND_USERS_TO_CLEAN_QUERY = "select USR_KEY, USR_EMP_NO from usr where USR_UDF_REBRANCHINGENDDATE = :endDate";
 
-    private final static String OIM_FIND_USR_TO_BLOCK_BY_SOURCE_IF_EQUAL_QUERY = "SELECT distinct ad.ud_ADUSER_UID AD_LOGIN, 'UPDATE USR SET USR_STATUS = ''Disabled'' where usr_key = '''||usr.usr_key||''';' disable_usr***REMOVED***n" +
+    private final static String OIM_FIND_USR_TO_BLOCK_BY_SOURCE_IF_EQUAL_QUERY = "SELECT distinct ad.ud_ADUSER_UID AD_LOGIN, 'UPDATE USR SET USR_STATUS = ''Disabled'' where usr_key = '''||usr.usr_key||'''' disable_usr***REMOVED***n" +
             "FROM USR***REMOVED***n" +
             "  JOIN ORC on orc.usr_key = usr.usr_key***REMOVED***n" +
             "  join UD_ADUSER ad on ad.ORC_KEY = orc.orc_key***REMOVED***n" +
@@ -90,7 +91,7 @@ public class JdbcQueryService {
             "    where LKU_TYPE_STRING_KEY = 'Lookup.Actualize.UserVacationExclusion') ***REMOVED***n" +
             "AND usr.usr_key IN (SELECT usr_key from usr where USR_UDF_OL_0_2 = (SELECT ORG_UDF_HRORGNAME FROM ACT where ORG_UDF_HRORGCODE = :sourceId))";
 
-    private final static String OIM_FIND_USR_TO_BLOCK_BY_SOURCE_IF_NOT_EQUAL_QUERY = "SELECT distinct ad.ud_ADUSER_UID AD_LOGIN, 'UPDATE USR SET USR_STATUS = ''Disabled'' where usr_key = '''||usr.usr_key||''';' disable_usr***REMOVED***n" +
+    private final static String OIM_FIND_USR_TO_BLOCK_BY_SOURCE_IF_NOT_EQUAL_QUERY = "SELECT distinct ad.ud_ADUSER_UID AD_LOGIN, 'UPDATE USR SET USR_STATUS = ''Disabled'' where usr_key = '''||usr.usr_key||'''' disable_usr***REMOVED***n" +
             "FROM USR***REMOVED***n" +
             "  JOIN ORC on orc.usr_key = usr.usr_key***REMOVED***n" +
             "  join UD_ADUSER ad on ad.ORC_KEY = orc.orc_key***REMOVED***n" +
@@ -106,8 +107,8 @@ public class JdbcQueryService {
             "          start with ORG_UDF_HRORGCODE = :sourceId ***REMOVED***n" +
             "          connect by prior ORG_UDF_HRORGCODE = ORG_UDF_HRPARENTORGCODE))";
 
-    private final static String OIM_FIND_USR_TO_ENABLE_BY_SOURCE_IF_EQUAL_QUERY = "SELECT distinct ad.ud_ADUSER_UID AD_LOGIN, 'UPDATE USR SET USR_STATUS = ''Active'' where usr_key = '''||usr.usr_key||''';' enabled_usr,***REMOVED***n" +
-            "'UPDATE USER_PROVISIONING_ATTRS SET POLICY_EVAL_IN_PROGRESS = 0, POLICY_EVAL_NEEDED = 1 where usr_key = '''||usr.usr_key||''';' upd_AP***REMOVED***n" +
+    private final static String OIM_FIND_USR_TO_ENABLE_BY_SOURCE_IF_EQUAL_QUERY = "SELECT distinct ad.ud_ADUSER_UID AD_LOGIN, 'UPDATE USR SET USR_STATUS = ''Active'' where usr_key = '''||usr.usr_key||'''' enabled_usr,***REMOVED***n" +
+            "'UPDATE USER_PROVISIONING_ATTRS SET POLICY_EVAL_IN_PROGRESS = 0, POLICY_EVAL_NEEDED = 1 where usr_key = '''||usr.usr_key||'''' upd_AP***REMOVED***n" +
             "FROM USR***REMOVED***n" +
             "  JOIN ORC on orc.usr_key = usr.usr_key***REMOVED***n" +
             "  join UD_ADUSER ad on ad.ORC_KEY = orc.orc_key***REMOVED***n" +
@@ -121,8 +122,8 @@ public class JdbcQueryService {
             "AND (to_date(sysdate, 'dd.mm.yyyy') NOT between to_date(nvl(usr.USR_UDF_STARTDATEVACATION, sysdate -1), 'dd.mm.yyyy') and to_date(nvl(usr.USR_UDF_ENDDATEVACATION, sysdate + 1), 'dd.mm.yyyy') or USR_UDF_STARTDATEVACATION is null) ***REMOVED***n" +
             "AND usr.usr_key IN (SELECT usr_key from usr where USR_UDF_OL_0_2 = (SELECT ORG_UDF_HRORGNAME FROM ACT where ORG_UDF_HRORGCODE = :sourceId))";
 
-    private final static String OIM_FIND_USR_TO_ENABLE_BY_SOURCE_IF_NOT_EQUAL_QUERY = "SELECT distinct ad.ud_ADUSER_UID AD_LOGIN, 'UPDATE USR SET USR_STATUS = ''Active'' where usr_key = '''||usr.usr_key||''';' enabled_usr,***REMOVED***n" +
-            "'UPDATE USER_PROVISIONING_ATTRS SET POLICY_EVAL_IN_PROGRESS = 0, POLICY_EVAL_NEEDED = 1 where usr_key = '''||usr.usr_key||''';' upd_AP***REMOVED***n" +
+    private final static String OIM_FIND_USR_TO_ENABLE_BY_SOURCE_IF_NOT_EQUAL_QUERY = "SELECT distinct ad.ud_ADUSER_UID AD_LOGIN, 'UPDATE USR SET USR_STATUS = ''Active'' where usr_key = '''||usr.usr_key||'''' enabled_usr,***REMOVED***n" +
+            "'UPDATE USER_PROVISIONING_ATTRS SET POLICY_EVAL_IN_PROGRESS = 0, POLICY_EVAL_NEEDED = 1 where usr_key = '''||usr.usr_key||'''' upd_AP***REMOVED***n" +
             "FROM USR***REMOVED***n" +
             "  JOIN ORC on orc.usr_key = usr.usr_key***REMOVED***n" +
             "  join UD_ADUSER ad on ad.ORC_KEY = orc.orc_key***REMOVED***n" +
@@ -141,7 +142,7 @@ public class JdbcQueryService {
             "          start with ORG_UDF_HRORGCODE = :sourceId ***REMOVED***n" +
             "          connect by prior ORG_UDF_HRORGCODE = ORG_UDF_HRPARENTORGCODE))";
 
-    private final static String OIM_FIND_USR_TO_BLOCK_BY_EMP_QUERY = "SELECT distinct ad.ud_ADUSER_UID AD_LOGIN, 'UPDATE USR SET USR_STATUS = ''Disabled'' where usr_key = '''||usr.usr_key||''';' disable_usr***REMOVED***n" +
+    private final static String OIM_FIND_USR_TO_BLOCK_BY_EMP_QUERY = "SELECT distinct ad.ud_ADUSER_UID AD_LOGIN, 'UPDATE USR SET USR_STATUS = ''Disabled'' where usr_key = '''||usr.usr_key||'''' disable_usr***REMOVED***n" +
             "FROM USR***REMOVED***n" +
             "  JOIN ORC on orc.usr_key = usr.usr_key***REMOVED***n" +
             "  join UD_ADUSER ad on ad.ORC_KEY = orc.orc_key***REMOVED***n" +
@@ -152,8 +153,8 @@ public class JdbcQueryService {
             "    where LKU_TYPE_STRING_KEY = 'Lookup.Actualize.UserVacationExclusion')***REMOVED***n" +
             "AND USR.USR_EMP_NO IN (:empNumbers)";
 
-    private final static String OIM_FIND_USR_TO_ENABLE_BY_EMP_QUERY = "SELECT distinct ad.ud_ADUSER_UID AD_LOGIN, 'UPDATE USR SET USR_STATUS = ''Active'' where usr_key = '''||usr.usr_key||''';' enabled_usr,***REMOVED***n" +
-            "'UPDATE USER_PROVISIONING_ATTRS SET POLICY_EVAL_IN_PROGRESS = 0, POLICY_EVAL_NEEDED = 1 where usr_key = '''||usr.usr_key||''';' upd_AP***REMOVED***n" +
+    private final static String OIM_FIND_USR_TO_ENABLE_BY_EMP_QUERY = "SELECT distinct ad.ud_ADUSER_UID AD_LOGIN, 'UPDATE USR SET USR_STATUS = ''Active'' where usr_key = '''||usr.usr_key||'''' enabled_usr,***REMOVED***n" +
+            "'UPDATE USER_PROVISIONING_ATTRS SET POLICY_EVAL_IN_PROGRESS = 0, POLICY_EVAL_NEEDED = 1 where usr_key = '''||usr.usr_key||'''' upd_AP***REMOVED***n" +
             "FROM USR***REMOVED***n" +
             "  JOIN ORC on orc.usr_key = usr.usr_key***REMOVED***n" +
             "  join UD_ADUSER ad on ad.ORC_KEY = orc.orc_key***REMOVED***n" +
@@ -169,6 +170,10 @@ public class JdbcQueryService {
 
     private static final String CHECK_SOURCE_ID_QUERY = "SELECT ORG_UDF_HRPARENTORGCODE FROM ACT WHERE ORG_UDF_HRORGCODE = :sourceId";
 
+    public void processOimUser(String query) {
+        jdbcTemplate.execute(query, PreparedStatement::executeUpdate);
+    ***REMOVED***
+
     public void updateOmniRequestQuery(String empNumber, String objectId, Map<String, String> valuesToUpdate) {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("empNumber", empNumber)
@@ -182,40 +187,61 @@ public class JdbcQueryService {
         jdbcTemplate.execute(String.format(OMNI_UPDATE_BLOCK_QUERY, convertParamsMapToQueryData(valuesToUpdate)), params, PreparedStatement::executeUpdate);
     ***REMOVED***
 
-    public List<String> findUsersToBlockByEmployeeNumber(List<String> empNumbers) {
+    public List<ProcessedUser> findUsersToBlockByEmployeeNumber(List<String> empNumbers) {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("empNumbers", empNumbers);
-        return jdbcTemplate.query(OIM_FIND_USR_TO_BLOCK_BY_EMP_QUERY, params, (rs, rowNum) -> rs.getString("AD_LOGIN"));
+        return jdbcTemplate.query(OIM_FIND_USR_TO_BLOCK_BY_EMP_QUERY, params, (rs, rowNum) -> ProcessedUser.builder()
+                .adLogin(rs.getString("AD_LOGIN"))
+                .processOimUserScript(rs.getString("disable_usr"))
+                .build());
     ***REMOVED***
 
-    public List<String> findUsersToEnableByEmployeeNumber(List<String> empNumbers) {
+    public List<ProcessedUser> findUsersToEnableByEmployeeNumber(List<String> empNumbers) {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("empNumbers", empNumbers);
-        return jdbcTemplate.query(OIM_FIND_USR_TO_ENABLE_BY_EMP_QUERY, params, (rs, rowNum) -> rs.getString("AD_LOGIN"));
+        return jdbcTemplate.query(OIM_FIND_USR_TO_ENABLE_BY_EMP_QUERY, params, (rs, rowNum) -> ProcessedUser.builder()
+                .adLogin(rs.getString("AD_LOGIN"))
+                .processOimUserScript(rs.getString("enabled_usr"))
+                .provisioningScript(rs.getString("upd_AP"))
+                .build());
     ***REMOVED***
 
-    public List<String> findUsersToBlockBySourceIdIfEqual(String sourceId) {
+    public List<ProcessedUser> findUsersToBlockBySourceIdIfEqual(String sourceId) {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("sourceId", sourceId);
-        return jdbcTemplate.query(OIM_FIND_USR_TO_BLOCK_BY_SOURCE_IF_EQUAL_QUERY, params, (rs, rowNum) -> rs.getString("AD_LOGIN"));
+        return jdbcTemplate.query(OIM_FIND_USR_TO_BLOCK_BY_SOURCE_IF_EQUAL_QUERY, params, (rs, rowNum) -> ProcessedUser.builder()
+                .adLogin(rs.getString("AD_LOGIN"))
+                .processOimUserScript(rs.getString("disable_usr"))
+                .build());
     ***REMOVED***
 
-    public List<String> findUsersToBlockBySourceIdIfNotEqual(String sourceId) {
+    public List<ProcessedUser> findUsersToBlockBySourceIdIfNotEqual(String sourceId) {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("sourceId", sourceId);
-        return jdbcTemplate.query(OIM_FIND_USR_TO_BLOCK_BY_SOURCE_IF_NOT_EQUAL_QUERY, params, (rs, rowNum) -> rs.getString("AD_LOGIN"));
+        return jdbcTemplate.query(OIM_FIND_USR_TO_BLOCK_BY_SOURCE_IF_NOT_EQUAL_QUERY, params, (rs, rowNum) -> ProcessedUser.builder()
+                .adLogin(rs.getString("AD_LOGIN"))
+                .processOimUserScript(rs.getString("disable_usr"))
+                .build());
     ***REMOVED***
 
-    public List<String> findUsersToEnableBySourceIdIfEqual(String sourceId) {
+    public List<ProcessedUser> findUsersToEnableBySourceIdIfEqual(String sourceId) {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("sourceId", sourceId);
-        return jdbcTemplate.query(OIM_FIND_USR_TO_ENABLE_BY_SOURCE_IF_EQUAL_QUERY, params, (rs, rowNum) -> rs.getString("AD_LOGIN"));
+        return jdbcTemplate.query(OIM_FIND_USR_TO_ENABLE_BY_SOURCE_IF_EQUAL_QUERY, params, (rs, rowNum) -> ProcessedUser.builder()
+                .adLogin(rs.getString("AD_LOGIN"))
+                .processOimUserScript(rs.getString("enabled_usr"))
+                .provisioningScript(rs.getString("upd_AP"))
+                .build());
     ***REMOVED***
 
-    public List<String> findUsersToEnableBySourceIdIfNotEqual(String sourceId) {
+    public List<ProcessedUser> findUsersToEnableBySourceIdIfNotEqual(String sourceId) {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("sourceId", sourceId);
-        return jdbcTemplate.query(OIM_FIND_USR_TO_ENABLE_BY_SOURCE_IF_NOT_EQUAL_QUERY, params, (rs, rowNum) -> rs.getString("AD_LOGIN"));
+        return jdbcTemplate.query(OIM_FIND_USR_TO_ENABLE_BY_SOURCE_IF_NOT_EQUAL_QUERY, params, (rs, rowNum) -> ProcessedUser.builder()
+                .adLogin(rs.getString("AD_LOGIN"))
+                .processOimUserScript(rs.getString("enabled_usr"))
+                .provisioningScript(rs.getString("upd_AP"))
+                .build());
     ***REMOVED***
 
     public String checkSourceId(String sourceId) {
