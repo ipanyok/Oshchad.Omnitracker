@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 import ua.datastech.omnitracker.model.oim.OmniTrackerAttachmentInfoRequest;
 import ua.datastech.omnitracker.model.oim.OmniTrackerRequest;
 import ua.datastech.omnitracker.model.omni.api.OmniTrackerResponse;
-import ua.datastech.omnitracker.service.script.PowerShellExecutor;
 import ua.datastech.omnitracker.service.tracker.OmnitrackerService;
 
 @RestController
@@ -20,16 +19,6 @@ import ua.datastech.omnitracker.service.tracker.OmnitrackerService;
 public class OmnitrackerController {
 
     private final OmnitrackerService omnitrackerService;
-    private final PowerShellExecutor powerShellExecutor;
-
-//    @PostMapping(value = "/api/call-dispatch-req", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-//    public OmniTrackerResponse omnitrackerApi(@RequestBody OmniTrackerRequest request) {
-//        log.info("call-dispatch-req()... objectId: " + request.getObjectID());
-//        omnitrackerService.saveOmniRequest(request);
-//        return OmniTrackerResponse.builder()
-//                .externalID(request.getObjectID())
-//                .build();
-//    ***REMOVED***
 
     @PostMapping(value = "/api/call-dispatch-req", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public OmniTrackerResponse omnitrackerApiBlocking(@RequestBody OmniTrackerRequest request) {
@@ -43,7 +32,7 @@ public class OmnitrackerController {
     @PostMapping(value = "/api/call-user-info", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public OmniTrackerResponse omnitrackerApiGetAttachmentsInfo(@RequestBody OmniTrackerAttachmentInfoRequest request) {
         log.info("receive call-update-req()... objectId: " + request.getObjectID());
-        omnitrackerService.saveOmniAttachmetRequest(request);
+        omnitrackerService.saveOmniAttachmentRequest(request);
         return OmniTrackerResponse.builder()
                 .externalID(request.getObjectID())
                 .build();
