@@ -92,6 +92,14 @@ public class OmnitrackerService {
     ***REMOVED***
 
     public void saveOmniAttachmetRequest(OmniTrackerAttachmentInfoRequest request) {
+        if (request == null) {
+            log.info("Request for attachment is empty.");
+            return;
+        ***REMOVED***
+        if (request.getAttachments() == null) {
+            log.info("Request doesn't have any attachment.");
+            return;
+        ***REMOVED***
         request.getAttachments().forEach(attachment -> {
             SqlParameterSource namedParameters = new MapSqlParameterSource()
                     .addValue("objectId", request.getObjectID())
