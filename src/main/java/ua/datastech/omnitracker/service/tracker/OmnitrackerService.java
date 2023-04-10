@@ -10,10 +10,9 @@ import org.springframework.stereotype.Service;
 import ua.datastech.omnitracker.model.dto.ActionType;
 import ua.datastech.omnitracker.model.oim.OmniTrackerAttachmentInfoRequest;
 import ua.datastech.omnitracker.model.oim.OmniTrackerRequest;
+import ua.datastech.omnitracker.service.tracker.processor.OmniRequestProcessor;
 
 import java.sql.PreparedStatement;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -26,72 +25,14 @@ public class OmnitrackerService {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
-    public void saveOmniRequest(OmniTrackerRequest request) {
-        SqlParameterSource namedParameters = new MapSqlParameterSource()
-                .addValue("objectId", request.getObjectID())
-                .addValue("empNumber", request.getAdditionalInfo().getEmpNumber())
-                .addValue("mainBranch", request.getAdditionalInfo().getMainBranch())
-                .addValue("tmpBranch", request.getAdditionalInfo().getTmpBranch())
-                .addValue("startDate", java.sql.Date.valueOf(request.getAdditionalInfo().getStartDate().substring(0, request.getAdditionalInfo().getStartDate().indexOf("T"))))
-                .addValue("endDate", java.sql.Date.valueOf(request.getAdditionalInfo().getEndDate().substring(0, request.getAdditionalInfo().getEndDate().indexOf("T"))))
-                .addValue("localDate", LocalDateTime.now());
-        Integer execute = jdbcTemplate.execute("insert into omni_request (OBJECT_ID, EMP_NO, MAINBRANCH, TEMPBRANCH, REBRANCHINGSTARTDATE, REBRANCHINGENDDATE, CHANGED_AT) VALUES (:objectId, :empNumber, :mainBranch, :tmpBranch, :startDate, :endDate, :localDate)",
-                namedParameters,
-                PreparedStatement::executeUpdate
-        );
-        if (execute != 0) {
-            log.info("Omni request " + request.getObjectID() + " was saved.");
-        ***REMOVED***
-    ***REMOVED***
+    private final List<OmniRequestProcessor> omniRequestProcessors;
 
     public void saveOmniBlockRequest(OmniTrackerRequest request) {
-        LocalDateTime parseTime = LocalDateTime.parse(request.getAdditionalInfo().getDate().substring(0, 20));
-        if (parseTime.getMinute() != 0) {
-            int minutes = 10 - parseTime.getMinute();
-            while (minutes < 0) {
-                minutes = minutes + 10;
-            ***REMOVED***
-            parseTime = parseTime.plusMinutes(minutes).withSecond(0);
-        ***REMOVED***
-        SqlParameterSource namedParameters = new MapSqlParameterSource()
-                .addValue("objectId", request.getObjectID())
-                .addValue("action", profile.equals("prod") ? ActionType.findActionByServiceTypeIdProd(request.getServiceTypeID()) : ActionType.findActionByServiceTypeIdTest(request.getServiceTypeID()))
-                .addValue("actionDate", java.sql.Timestamp.valueOf(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(parseTime)))
-                .addValue("localDate", LocalDateTime.now());
-        Integer execute = jdbcTemplate.execute("insert into OMNI_BLOCK_REQUEST (OBJECT_ID, ACTION, ACTION_DATE, CHANGED_AT) VALUES (:objectId, :action, :actionDate, :localDate)",
-                namedParameters,
-                PreparedStatement::executeUpdate
-        );
-        if (request.getAdditionalInfo().getPersons() != null) {
-            request.getAdditionalInfo().getPersons().forEach(person -> {
-                SqlParameterSource params = new MapSqlParameterSource()
-                        .addValue("objectId", request.getObjectID())
-                        .addValue("empNumber", person.getEmployeeID());
-                List<String> ids = jdbcTemplate.query("SELECT ID FROM OMNI_BLOCK_REQUEST WHERE OBJECT_ID = :objectId", params, (rs, rowNum) -> rs.getString("ID"));
-                jdbcTemplate.execute("insert into OMNI_BLOCK_DATA (OMNI_BLOCK_REQUEST_ID, EMP_NUMBER) VALUES (" + ids.get(0) + ", :empNumber)",
-                        params,
-                        PreparedStatement::executeUpdate
-                );
-            ***REMOVED***);
-        ***REMOVED***
-        if (request.getAdditionalInfo().getOrganizations() != null) {
-            request.getAdditionalInfo().getOrganizations().forEach(org -> {
-                SqlParameterSource params = new MapSqlParameterSource()
-                        .addValue("objectId", request.getObjectID())
-                        .addValue("sourceId", org.getSourceID());
-                List<String> ids = jdbcTemplate.query("SELECT ID FROM OMNI_BLOCK_REQUEST WHERE OBJECT_ID = :objectId", params, (rs, rowNum) -> rs.getString("ID"));
-                jdbcTemplate.execute("insert into OMNI_BLOCK_DATA (OMNI_BLOCK_REQUEST_ID, SOURCE_ID) VALUES (" + ids.get(0) + ", :sourceId)",
-                        params,
-                        PreparedStatement::executeUpdate
-                );
-            ***REMOVED***);
-        ***REMOVED***
-        if (execute != 0) {
-            log.info("Omni block request " + request.getObjectID() + " was saved.");
-        ***REMOVED***
+        OmniRequestProcessor processor = getProcessor(request);
+        processor.process(request);
     ***REMOVED***
 
-    public void saveOmniAttachmetRequest(OmniTrackerAttachmentInfoRequest request) {
+    public void saveOmniAttachmentRequest(OmniTrackerAttachmentInfoRequest request) {
         request.getAttachments().forEach(attachment -> {
             SqlParameterSource namedParameters = new MapSqlParameterSource()
                     .addValue("objectId", request.getObjectID())
@@ -107,6 +48,20 @@ public class OmnitrackerService {
                 log.info("Attachment data for request " + request.getObjectID() + " was saved.");
             ***REMOVED***
         ***REMOVED***);
+    ***REMOVED***
+
+    private OmniRequestProcessor getProcessor(OmniTrackerRequest request) {
+        String actionName;
+        if (profile.equals("prod")) {
+            actionName = ActionType.findActionByServiceTypeIdProd(request.getServiceTypeID());
+        ***REMOVED*** else {
+            actionName = ActionType.findActionByServiceTypeIdTest(request.getServiceTypeID());
+        ***REMOVED***
+        request.setServiceTypeID(actionName);
+        return omniRequestProcessors.stream()
+                .filter(omniRequestProcessor -> omniRequestProcessor.getActions().contains(actionName))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Can't find any processors"));
     ***REMOVED***
 
 ***REMOVED***
