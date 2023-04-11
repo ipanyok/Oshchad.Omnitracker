@@ -168,7 +168,43 @@ public class JdbcQueryService {
             "AND (to_date(sysdate, 'dd.mm.yyyy') NOT between to_date(nvl(usr.USR_UDF_STARTDATEVACATION, sysdate -1), 'dd.mm.yyyy') and to_date(nvl(usr.USR_UDF_ENDDATEVACATION, sysdate + 1), 'dd.mm.yyyy') or USR_UDF_STARTDATEVACATION is null)\n" +
             "AND USR.USR_EMP_NO IN (:empNumbers)";
 
+    private static final String BY_FILE_OIM_USER_QUERY = "SELECT distinct ad.ud_ADUSER_UID AD_LOGIN, 'UPDATE USR SET USR_STATUS = ''Active'' where usr_key = '''||usr.usr_key||'''' enabled_usr,\n" +
+            "'UPDATE USR SET USR_STATUS = ''Disabled'' where usr_key = '''||usr.usr_key||'''' disable_usr,\n" +
+            "'UPDATE USER_PROVISIONING_ATTRS SET POLICY_EVAL_IN_PROGRESS = 0, POLICY_EVAL_NEEDED = 1 where usr_key = '''||usr.usr_key||'''' upd_AP\n" +
+            "FROM USR\n" +
+            "  JOIN ORC on orc.usr_key = usr.usr_key\n" +
+            "  join UD_ADUSER ad on ad.ORC_KEY = orc.orc_key\n" +
+            "  join oiu on oiu .orc_key = orc.orc_key\n" +
+            "  join ost on oiu.ost_key = ost.osT_key and OST_STATUS IN ('Disabled', 'Provisioned', 'Enabled')\n" +
+            "WHERE UPPER(ad.ud_ADUSER_UID) IN (:adLogins)";
+
     private static final String CHECK_SOURCE_ID_QUERY = "SELECT ORG_UDF_HRPARENTORGCODE FROM ACT WHERE ORG_UDF_HRORGCODE = :sourceId";
+
+    public List<ProcessedUser> findUsersToEnableByAdLogin(List<String> adLogins) {
+        List<String> upperCaseLogins = adLogins.stream()
+                .map(String::toUpperCase)
+                .collect(Collectors.toList());
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("adLogins", upperCaseLogins);
+        return jdbcTemplate.query(BY_FILE_OIM_USER_QUERY, params, (rs, rowNum) -> ProcessedUser.builder()
+                .adLogin(rs.getString("AD_LOGIN"))
+                .processOimUserScript(rs.getString("enabled_usr"))
+                .provisioningScript(rs.getString("upd_AP"))
+                .build());
+    ***REMOVED***
+
+    public List<ProcessedUser> findUsersToDisableByAdLogin(List<String> adLogins) {
+        List<String> upperCaseLogins = adLogins.stream()
+                .map(String::toUpperCase)
+                .collect(Collectors.toList());
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("adLogins", upperCaseLogins);
+        return jdbcTemplate.query(BY_FILE_OIM_USER_QUERY, params, (rs, rowNum) -> ProcessedUser.builder()
+                .adLogin(rs.getString("AD_LOGIN"))
+                .processOimUserScript(rs.getString("disable_usr"))
+                .build());
+    ***REMOVED***
+
 
     public void processOimUser(String query) {
         jdbcTemplate.execute(query, PreparedStatement::executeUpdate);

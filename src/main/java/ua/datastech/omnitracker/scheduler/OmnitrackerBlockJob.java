@@ -129,13 +129,13 @@ public class OmnitrackerBlockJob {
             AtomicReference<List<String>> unprocessedUsers = new AtomicReference<>();
             attachmentData.forEach(data -> {
                 List<String> users = ExcelFileReader.read(data.getAttachment());
-
-                //todo tmp solution  - need also scripts for process OIM user
-                List<ProcessedUser> processedUsers = new ArrayList<>();
-                users.forEach(user -> processedUsers.add(ProcessedUser.builder().adLogin(user).build()));
-                //
-
+                List<ProcessedUser> processedUsers;
                 if (users != null && !users.isEmpty()) {
+                    if (data.getAction().equals(ActionType.ENABLE_BY_FILE.name())) {
+                        processedUsers = jdbcQueryService.findUsersToEnableByAdLogin(users);
+                    ***REMOVED*** else {
+                        processedUsers = jdbcQueryService.findUsersToDisableByAdLogin(users);
+                    ***REMOVED***
                     List<String> existingUnprocessedUsers = unprocessedUsers.get();
                     List<String> scriptUnprocessedUsers = powerShellExecutor.execute(data.getAction(), processedUsers);
                     if (existingUnprocessedUsers == null) {
