@@ -98,43 +98,28 @@ public class OmnitrackerService {
     ***REMOVED***
 
     public void saveOmniAttachmetRequest(OmniTrackerAttachmentInfoRequest request) {
-        boolean isNeedClose = false;
-        String rejectedReason = null;
-        if (request == null) {
-            log.info("Request for attachment is empty.");
-            isNeedClose = true;
-            rejectedReason = "Запит для збереження вкладення пустий.";
+        if (request != null && request.getAttachments() != null) {
+            try {
+                request.getAttachments().forEach(attachment -> {
+                    SqlParameterSource namedParameters = new MapSqlParameterSource()
+                            .addValue("objectId", request.getObjectID())
+                            .addValue("oid", attachment.getOid())
+                            .addValue("fileName", attachment.getFileName())
+                            .addValue("fileSize", attachment.getFileSize());
+                    List<String> ids = jdbcTemplate.query("SELECT ID FROM OMNI_BLOCK_REQUEST WHERE OBJECT_ID = :objectId", namedParameters, (rs, rowNum) -> rs.getString("ID"));
+                    Integer execute = jdbcTemplate.execute("insert into OMNI_BLOCK_ATTACHMENT (OMNI_BLOCK_REQUEST_ID, OID, FILENAME, FILESIZE) VALUES (" + ids.get(0) + ", :oid, :fileName, :fileSize)",
+                            namedParameters,
+                            PreparedStatement::executeUpdate
+                    );
+                    if (execute != 0) {
+                        log.info("Attachment data for request " + request.getObjectID() + " was saved.");
+                    ***REMOVED***
+                ***REMOVED***);
+            ***REMOVED*** catch (Exception e) {
+                log.error("Can't save attachment for objectId: " + request.getObjectID(), e.getMessage());
+                closeRequest(request.getObjectID(), "Помилка під час збереження вкладення.");
+            ***REMOVED***
         ***REMOVED***
-        if (request.getAttachments() == null) {
-            log.info("Request doesn't have any attachment.");
-            isNeedClose = true;
-            rejectedReason = "Запит не містить жодного вкладення.";
-        ***REMOVED***
-        if (isNeedClose) {
-            closeRequest(request.getObjectID(), rejectedReason);
-            return;
-        ***REMOVED***
-        try {
-            request.getAttachments().forEach(attachment -> {
-                SqlParameterSource namedParameters = new MapSqlParameterSource()
-                        .addValue("objectId", request.getObjectID())
-                        .addValue("oid", attachment.getOid())
-                        .addValue("fileName", attachment.getFileName())
-                        .addValue("fileSize", attachment.getFileSize());
-                List<String> ids = jdbcTemplate.query("SELECT ID FROM OMNI_BLOCK_REQUEST WHERE OBJECT_ID = :objectId", namedParameters, (rs, rowNum) -> rs.getString("ID"));
-                Integer execute = jdbcTemplate.execute("insert into OMNI_BLOCK_ATTACHMENT (OMNI_BLOCK_REQUEST_ID, OID, FILENAME, FILESIZE) VALUES (" + ids.get(0) + ", :oid, :fileName, :fileSize)",
-                        namedParameters,
-                        PreparedStatement::executeUpdate
-                );
-                if (execute != 0) {
-                    log.info("Attachment data for request " + request.getObjectID() + " was saved.");
-                ***REMOVED***
-            ***REMOVED***);
-        ***REMOVED*** catch (Exception e) {
-            log.error("Can't save attachment for objectId: " + request.getObjectID(), e.getMessage());
-            closeRequest(request.getObjectID(), "Помилка під час збереження вкладення.");
-        ***REMOVED***
-
     ***REMOVED***
 
     private void closeRequest(String objectId, String reason) {
