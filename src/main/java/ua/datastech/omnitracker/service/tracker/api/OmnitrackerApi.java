@@ -102,7 +102,7 @@ public class OmnitrackerApi implements OmnitrackerApiService {
         ***REMOVED*** else {
             jdbcQueryService.updateOmniBlockRequestQuery(objectId, Collections.singletonMap("IS_CLOSURE_SENT", "1"));
         ***REMOVED***
-        log.info("Closure for " + objectId + " request was sent. Status: " + response.getStatusCode());
+        log.info("Closure for " + objectId + " request was sent. ***REMOVED***n" + solution + " ***REMOVED***nStatus: " + response.getStatusCode());
     ***REMOVED***
 
     private HttpHeaders createHeaders(String username, String password) {
