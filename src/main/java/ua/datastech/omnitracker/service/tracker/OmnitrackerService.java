@@ -10,14 +10,12 @@ import org.springframework.stereotype.Service;
 import ua.datastech.omnitracker.model.dto.ActionType;
 import ua.datastech.omnitracker.model.oim.OmniTrackerAttachmentInfoRequest;
 import ua.datastech.omnitracker.model.oim.OmniTrackerRequest;
-import ua.datastech.omnitracker.service.tracker.processor.OmniRequestProcessor;
 import ua.datastech.omnitracker.model.omni.api.ResponseCodeEnum;
 import ua.datastech.omnitracker.service.jdbc.JdbcQueryService;
 import ua.datastech.omnitracker.service.tracker.api.OmnitrackerApiService;
+import ua.datastech.omnitracker.service.tracker.processor.OmniRequestProcessor;
 
 import java.sql.PreparedStatement;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 
@@ -40,7 +38,7 @@ public class OmnitrackerService {
         processor.process(request);
     ***REMOVED***
 
-    public void saveOmniAttachmetRequest(OmniTrackerAttachmentInfoRequest request) {
+    public void saveOmniAttachmentRequest(OmniTrackerAttachmentInfoRequest request) {
         if (request != null && request.getAttachments() != null) {
             try {
                 request.getAttachments().forEach(attachment -> {
