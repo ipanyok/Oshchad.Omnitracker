@@ -11,8 +11,14 @@ import ua.datastech.omnitracker.model.dto.ActionType;
 import ua.datastech.omnitracker.model.oim.OmniTrackerAttachmentInfoRequest;
 import ua.datastech.omnitracker.model.oim.OmniTrackerRequest;
 import ua.datastech.omnitracker.service.tracker.processor.OmniRequestProcessor;
+import ua.datastech.omnitracker.model.omni.api.ResponseCodeEnum;
+import ua.datastech.omnitracker.service.jdbc.JdbcQueryService;
+import ua.datastech.omnitracker.service.tracker.api.OmnitrackerApiService;
 
 import java.sql.PreparedStatement;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -24,6 +30,8 @@ public class OmnitrackerService {
     private String profile;
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
+    private final OmnitrackerApiService omnitrackerApiService;
+    private final JdbcQueryService jdbcQueryService;
 
     private final List<OmniRequestProcessor> omniRequestProcessors;
 
@@ -32,22 +40,35 @@ public class OmnitrackerService {
         processor.process(request);
     ***REMOVED***
 
-    public void saveOmniAttachmentRequest(OmniTrackerAttachmentInfoRequest request) {
-        request.getAttachments().forEach(attachment -> {
-            SqlParameterSource namedParameters = new MapSqlParameterSource()
-                    .addValue("objectId", request.getObjectID())
-                    .addValue("oid", attachment.getOid())
-                    .addValue("fileName", attachment.getFileName())
-                    .addValue("fileSize", attachment.getFileSize());
-            List<String> ids = jdbcTemplate.query("SELECT ID FROM OMNI_BLOCK_REQUEST WHERE OBJECT_ID = :objectId", namedParameters, (rs, rowNum) -> rs.getString("ID"));
-            Integer execute = jdbcTemplate.execute("insert into OMNI_BLOCK_ATTACHMENT (OMNI_BLOCK_REQUEST_ID, OID, FILENAME, FILESIZE) VALUES (" + ids.get(0) + ", :oid, :fileName, :fileSize)",
-                    namedParameters,
-                    PreparedStatement::executeUpdate
-            );
-            if (execute != 0) {
-                log.info("Attachment data for request " + request.getObjectID() + " was saved.");
+    public void saveOmniAttachmetRequest(OmniTrackerAttachmentInfoRequest request) {
+        if (request != null && request.getAttachments() != null) {
+            try {
+                request.getAttachments().forEach(attachment -> {
+                    SqlParameterSource namedParameters = new MapSqlParameterSource()
+                            .addValue("objectId", request.getObjectID())
+                            .addValue("oid", attachment.getOid())
+                            .addValue("fileName", attachment.getFileName())
+                            .addValue("fileSize", attachment.getFileSize());
+                    List<String> ids = jdbcTemplate.query("SELECT ID FROM OMNI_BLOCK_REQUEST WHERE OBJECT_ID = :objectId", namedParameters, (rs, rowNum) -> rs.getString("ID"));
+                    Integer execute = jdbcTemplate.execute("insert into OMNI_BLOCK_ATTACHMENT (OMNI_BLOCK_REQUEST_ID, OID, FILENAME, FILESIZE) VALUES (" + ids.get(0) + ", :oid, :fileName, :fileSize)",
+                            namedParameters,
+                            PreparedStatement::executeUpdate
+                    );
+                    if (execute != 0) {
+                        log.info("Attachment data for request " + request.getObjectID() + " was saved.");
+                    ***REMOVED***
+                ***REMOVED***);
+            ***REMOVED*** catch (Exception e) {
+                log.error("Can't save attachment for objectId: " + request.getObjectID(), e.getMessage());
+                closeRequest(request.getObjectID(), "Помилка під час збереження вкладення.");
             ***REMOVED***
-        ***REMOVED***);
+        ***REMOVED***
+    ***REMOVED***
+
+    private void closeRequest(String objectId, String reason) {
+        omnitrackerApiService.callOmniTrackerPickupService(null, objectId);
+        omnitrackerApiService.callOmniTrackerClosureService(null, objectId, ResponseCodeEnum.SC_CC_REJECTED, "Відхилено. " + reason, "");
+        jdbcQueryService.updateOmniBlockRequestQuery(objectId, Collections.singletonMap("IS_PROCESSED", "1"));
     ***REMOVED***
 
     private OmniRequestProcessor getProcessor(OmniTrackerRequest request) {
