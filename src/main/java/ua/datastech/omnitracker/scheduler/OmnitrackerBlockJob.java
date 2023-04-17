@@ -136,13 +136,22 @@ public class OmnitrackerBlockJob {
                     List<String> users = ExcelFileReader.read(data.getAttachment());
                     List<ProcessedUser> processedUsers;
                     if (users != null && !users.isEmpty()) {
+                        List<String> trimUsers = users.stream().map(String::trim).collect(Collectors.toList());
                         if (data.getAction().equals(ActionType.ENABLE_BY_FILE.name())) {
-                            processedUsers = jdbcQueryService.findUsersToEnableByAdLogin(users);
+                            processedUsers = jdbcQueryService.findUsersToEnableByAdLogin(trimUsers);
                         ***REMOVED*** else {
-                            processedUsers = jdbcQueryService.findUsersToDisableByAdLogin(users);
+                            processedUsers = jdbcQueryService.findUsersToDisableByAdLogin(trimUsers);
                         ***REMOVED***
+
+                        List<String> usersNonProcessed = trimUsers.stream()
+                                .filter(user -> !processedUsers.contains(user))
+                                .collect(Collectors.toList());
+
                         List<String> existingUnprocessedUsers = unprocessedUsers.get();
                         List<String> scriptUnprocessedUsers = powerShellExecutor.execute(data.getAction(), processedUsers);
+                        if (!usersNonProcessed.isEmpty()) {
+                            scriptUnprocessedUsers.addAll(usersNonProcessed);
+                        ***REMOVED***
                         if (existingUnprocessedUsers == null) {
                             unprocessedUsers.set(scriptUnprocessedUsers);
                         ***REMOVED*** else {
