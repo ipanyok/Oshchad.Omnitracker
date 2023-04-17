@@ -38,9 +38,10 @@ public class OmnitrackerBlockJob {
     @Scheduled(cron = "0 0/10 * * * ?")
     public void processData() {
         List<OimUserDto> omniData = jdbcQueryService.findAllUnprocessedBlockRequests();
+        LocalDateTime currentDate = LocalDateTime.now();
         omniData.forEach(oimUserDto -> {
             try {
-                if (checkIfDateExpired(oimUserDto)) {
+                if (checkIfDateExpired(oimUserDto, currentDate)) {
                     return;
                 ***REMOVED***
 
@@ -48,7 +49,7 @@ public class OmnitrackerBlockJob {
                     omnitrackerApiService.callOmniTrackerPickupService(null, oimUserDto.getObjectId());
                 ***REMOVED***
 
-                List<OimUserDto> usersDataToBlock = jdbcQueryService.findUsersToProcess(LocalDateTime.now(), oimUserDto.getObjectId());
+                List<OimUserDto> usersDataToBlock = jdbcQueryService.findUsersToProcess(currentDate, oimUserDto.getObjectId());
                 List<ProcessedUser> users = null;
                 if (oimUserDto.getAction().equals(ActionType.DISABLE_USER.name())) {
                     users = jdbcQueryService.findUsersToBlockByEmployeeNumber(usersDataToBlock.stream().map(OimUserDto::getEmpNumber).collect(Collectors.toList()));
@@ -105,9 +106,10 @@ public class OmnitrackerBlockJob {
     @Scheduled(cron = "0 0/10 * * * ?")
     public void processAttachmentsData() {
         List<OimUserDto> omniData = jdbcQueryService.findAllUnprocessedAttachmentsRequests();
+        LocalDateTime currentDate = LocalDateTime.now();
         omniData.forEach(oimUserDto -> {
             try {
-                if (checkIfDateExpired(oimUserDto)) {
+                if (checkIfDateExpired(oimUserDto, currentDate)) {
                     return;
                 ***REMOVED***
 
@@ -126,7 +128,7 @@ public class OmnitrackerBlockJob {
                     ***REMOVED***
                 ***REMOVED***
 
-                List<OimUserDto> attachmentData = jdbcQueryService.findAttachment(LocalDateTime.now(), oimUserDto.getObjectId());
+                List<OimUserDto> attachmentData = jdbcQueryService.findAttachment(currentDate, oimUserDto.getObjectId());
 
                 AtomicBoolean isProcessed = new AtomicBoolean(false);
                 AtomicReference<List<String>> unprocessedUsers = new AtomicReference<>();
@@ -169,9 +171,9 @@ public class OmnitrackerBlockJob {
         ***REMOVED***);
     ***REMOVED***
 
-    private boolean checkIfDateExpired(OimUserDto oimUserDto) {
+    private boolean checkIfDateExpired(OimUserDto oimUserDto, LocalDateTime currentDate) {
         boolean isExpired = false;
-        if (LocalDateTime.parse(oimUserDto.getActionDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")).truncatedTo(MINUTES).isBefore(LocalDateTime.now().truncatedTo(MINUTES)) && !oimUserDto.getIsClosureSent()) {
+        if (LocalDateTime.parse(oimUserDto.getActionDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")).truncatedTo(MINUTES).isBefore(currentDate.truncatedTo(MINUTES)) && !oimUserDto.getIsClosureSent()) {
             if (!oimUserDto.getIsPickupSent()) {
                 omnitrackerApiService.callOmniTrackerPickupService(null, oimUserDto.getObjectId());
             ***REMOVED***
