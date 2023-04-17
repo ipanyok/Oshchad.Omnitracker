@@ -57,6 +57,9 @@ public class OmnitrackerApi implements OmnitrackerApiService {
             log.error("Something went wrong. Status: " + response.getStatusCode());
             throw new RuntimeException("Error during send pickup request to omnitracker: " + response.getBody());
         ***REMOVED***
+
+        // todo refactor using request action
+
         if (empNumber != null) {
             jdbcQueryService.updateOmniRequestQuery(empNumber, objectId, Collections.singletonMap("IS_PICKUP_SENT", "1"));
         ***REMOVED*** else {
