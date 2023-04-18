@@ -144,6 +144,7 @@ public class OmnitrackerBlockJob {
                         ***REMOVED***
 
                         List<String> usersNonProcessed = trimUsers.stream()
+                                .map(String::toUpperCase)
                                 .filter(user -> !processedUsers.contains(user))
                                 .collect(Collectors.toList());
 
