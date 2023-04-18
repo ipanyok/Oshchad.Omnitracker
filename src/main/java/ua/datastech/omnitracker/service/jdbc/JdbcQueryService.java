@@ -168,7 +168,7 @@ public class JdbcQueryService {
             "AND (to_date(sysdate, 'dd.mm.yyyy') NOT between to_date(nvl(usr.USR_UDF_STARTDATEVACATION, sysdate -1), 'dd.mm.yyyy') and to_date(nvl(usr.USR_UDF_ENDDATEVACATION, sysdate + 1), 'dd.mm.yyyy') or USR_UDF_STARTDATEVACATION is null)***REMOVED***n" +
             "AND USR.USR_EMP_NO IN (:empNumbers)";
 
-    private static final String BY_FILE_OIM_USER_QUERY = "SELECT distinct ad.ud_ADUSER_UID AD_LOGIN, 'UPDATE USR SET USR_STATUS = ''Active'' where usr_key = '''||usr.usr_key||'''' enabled_usr,***REMOVED***n" +
+    private static final String BY_FILE_OIM_USER_QUERY = "SELECT distinct UPPER(ad.ud_ADUSER_UID) AD_LOGIN, 'UPDATE USR SET USR_STATUS = ''Active'' where usr_key = '''||usr.usr_key||'''' enabled_usr,***REMOVED***n" +
             "'UPDATE USR SET USR_STATUS = ''Disabled'' where usr_key = '''||usr.usr_key||'''' disable_usr,***REMOVED***n" +
             "'UPDATE USER_PROVISIONING_ATTRS SET POLICY_EVAL_IN_PROGRESS = 0, POLICY_EVAL_NEEDED = 1 where usr_key = '''||usr.usr_key||'''' upd_AP***REMOVED***n" +
             "FROM USR***REMOVED***n" +
