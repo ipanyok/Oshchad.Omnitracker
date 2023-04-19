@@ -145,7 +145,7 @@ public class OmnitrackerBlockJob {
 
                         List<String> usersNonProcessed = trimUsers.stream()
                                 .map(String::toUpperCase)
-                                .filter(user -> !processedUsers.contains(user))
+                                .filter(user -> !isContainsInProcessedUsers(processedUsers, user))
                                 .collect(Collectors.toList());
 
                         List<String> existingUnprocessedUsers = unprocessedUsers.get();
@@ -192,6 +192,17 @@ public class OmnitrackerBlockJob {
             isExpired = true;
         ***REMOVED***
         return isExpired;
+    ***REMOVED***
+
+    private boolean isContainsInProcessedUsers(List<ProcessedUser> processedUsers, String login) {
+        ProcessedUser user = processedUsers.stream()
+                .filter(processedUser -> processedUser.getAdLogin().equals(login))
+                .findFirst()
+                .orElse(null);
+        if (user != null) {
+            return true;
+        ***REMOVED***
+        return false;
     ***REMOVED***
 
 ***REMOVED***
