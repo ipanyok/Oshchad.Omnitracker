@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import ua.datastech.omnitracker.model.dto.OimUserDto;
 import ua.datastech.omnitracker.model.oim.ProcessedUser;
 
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -179,6 +180,43 @@ public class JdbcQueryService {
             "WHERE UPPER(ad.ud_ADUSER_UID) IN (:adLogins)";
 
     private static final String CHECK_SOURCE_ID_QUERY = "SELECT ORG_UDF_HRPARENTORGCODE FROM ACT WHERE ORG_UDF_HRORGCODE = :sourceId";
+
+    private static final String OIM_GET_ALL_USERS_WITH_START_REBRANCHING_QUERY =
+            "select usr.usr_key USR_KEY, usr.USR_UDF_OBJECTID USR_UDF_OBJECTID, usr.USR_UDF_TEMPBRANCH USR_UDF_TEMPBRANCH, usr.USR_EMP_NO USR_EMP_NO, OMNI_REQUEST.IS_CLOSURE_SENT IS_CLOSURE_SENT " +
+                    "from usr, OMNI_REQUEST " +
+                    "where usr.USR_EMP_NO = OMNI_REQUEST.EMP_NO " +
+                    "and (USR_UDF_CURRENTBRANCH2 <> USR_UDF_TEMPBRANCH or (USR_UDF_CURRENTBRANCH2 is null and USR_UDF_TEMPBRANCH is not null)) " +
+                    "and USR_UDF_REBRANCHINGSTARTDATE <=sysdate " +
+                    "and USR_UDF_REBRANCHINGENDDATE >= sysdate " +
+                    "and OMNI_REQUEST.IS_PROCESSED = 0 and OMNI_REQUEST.IS_SAVED = 1";
+
+    private static final String OIM_GET_ALL_USERS_WITH_END_REBRANCHING_QUERY =
+            "select usr.usr_key USR_KEY, usr.USR_UDF_OBJECTID USR_UDF_OBJECTID, usr.USR_UDF_MAINBRANCH USR_UDF_MAINBRANCH, usr.USR_EMP_NO USR_EMP_NO, OMNI_REQUEST.IS_CLOSURE_SENT IS_CLOSURE_SENT " +
+                    "from usr, OMNI_REQUEST " +
+                    "where usr.USR_EMP_NO = OMNI_REQUEST.EMP_NO " +
+                    "and (USR_UDF_CURRENTBRANCH2 <> USR_UDF_MAINBRANCH and USR_UDF_MAINBRANCH is not null or (USR_UDF_CURRENTBRANCH2 is null and USR_UDF_TEMPBRANCH is not null)) " +
+                    "and (USR_UDF_REBRANCHINGSTARTDATE > sysdate or USR_UDF_REBRANCHINGENDDATE < sysdate) " +
+                    "and OMNI_REQUEST.IS_PROCESSED = 0 and OMNI_REQUEST.IS_SAVED = 1";
+
+    public List<OimUserDto> findUsersForRebranching() {
+        return jdbcTemplate.query(OIM_GET_ALL_USERS_WITH_START_REBRANCHING_QUERY, (rs, rowNum) -> OimUserDto.builder()
+                .usrKey(rs.getLong("USR_KEY"))
+                .tmpBranch(rs.getString("USR_UDF_TEMPBRANCH"))
+                .objectId(rs.getString("USR_UDF_OBJECTID"))
+                .empNumber(rs.getString("USR_EMP_NO"))
+                .isClosureSent(rs.getBoolean("IS_CLOSURE_SENT"))
+                .build());
+    ***REMOVED***
+
+    public List<OimUserDto> findUsersForBackToMainBranch() {
+        return jdbcTemplate.query(OIM_GET_ALL_USERS_WITH_END_REBRANCHING_QUERY, (rs, rowNum) -> OimUserDto.builder()
+                .usrKey(rs.getLong("USR_KEY"))
+                .mainBranch(rs.getString("USR_UDF_MAINBRANCH"))
+                .objectId(rs.getString("USR_UDF_OBJECTID"))
+                .empNumber(rs.getString("USR_EMP_NO"))
+                .isClosureSent(rs.getBoolean("IS_CLOSURE_SENT"))
+                .build());
+    ***REMOVED***
 
     public List<ProcessedUser> findUsersToEnableByAdLogin(List<String> adLogins) {
         List<String> upperCaseLogins = adLogins.stream()
@@ -365,13 +403,14 @@ public class JdbcQueryService {
     ***REMOVED***
 
     public Integer updateOimUser(OimUserDto oimUserDto) {
+        Date endDate = Date.valueOf(Date.valueOf(oimUserDto.getEndDate()).toLocalDate().plusDays(1));
         SqlParameterSource namedParametersForUpdate = new MapSqlParameterSource()
                 .addValue("empNumber", oimUserDto.getEmpNumber())
                 .addValue("objectId", oimUserDto.getObjectId())
                 .addValue("mainBranch", oimUserDto.getMainBranch())
                 .addValue("tmpBranch", oimUserDto.getTmpBranch())
                 .addValue("startDate", java.sql.Date.valueOf(oimUserDto.getStartDate()))
-                .addValue("endDate", java.sql.Date.valueOf(oimUserDto.getEndDate()));
+                .addValue("endDate", endDate);
         return jdbcTemplate.execute(OIM_UPDATE_USER_BY_EMP_NUMBER_QUERY, namedParametersForUpdate, PreparedStatement::executeUpdate);
     ***REMOVED***
 
