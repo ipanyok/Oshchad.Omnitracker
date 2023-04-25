@@ -78,6 +78,13 @@
 			<artifactId>poi-ooxml</artifactId>
 			<version>5.2.2</version>
 		</dependency>
+		<dependency>
+			<groupId>OIMClient</groupId>
+			<artifactId>oimclient</artifactId>
+			<version>1.0</version>
+			<scope>system</scope>
+			<systemPath>${pom.basedir***REMOVED***/lib/oimclient.jar</systemPath>
+		</dependency>
 	</dependencies>
 
 	<build>
