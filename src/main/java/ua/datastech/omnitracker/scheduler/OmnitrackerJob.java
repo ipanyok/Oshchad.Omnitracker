@@ -2,14 +2,11 @@ package ua.datastech.omnitracker.scheduler;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import oracle.iam.identity.usermgmt.api.UserManager;
-import oracle.iam.identity.usermgmt.vo.User;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import ua.datastech.omnitracker.model.dto.OimUserDto;
 import ua.datastech.omnitracker.model.omni.api.ResponseCodeEnum;
 import ua.datastech.omnitracker.service.jdbc.JdbcQueryService;
-import ua.datastech.omnitracker.service.oim.OimClient;
 import ua.datastech.omnitracker.service.tracker.api.OmnitrackerApiService;
 
 import java.util.Collections;
@@ -22,7 +19,6 @@ public class OmnitrackerJob {
 
     private final OmnitrackerApiService omnitrackerApiService;
     private final JdbcQueryService jdbcQueryService;
-    private final OimClient oimClient;
 
     @Scheduled(cron = "0 0/10 * * * ?")
     public void saveOmniDataToOIM() {
@@ -53,26 +49,20 @@ public class OmnitrackerJob {
         ***REMOVED***);
     ***REMOVED***
 
-//    @Scheduled(cron = "@daily")
-    @Scheduled(cron = "0 0/15 * * * ?")
+    @Scheduled(cron = "@daily")
     public void processRebranching() {
-        UserManager userManager = oimClient.getOIMClient().getService(UserManager.class);
         List<OimUserDto> rebranchedUsers = jdbcQueryService.findUsersForRebranching();
         List<OimUserDto> backUsers = jdbcQueryService.findUsersForBackToMainBranch();
-        rebranching(userManager, rebranchedUsers, true);
-        rebranching(userManager, backUsers, false);
+        rebranching(rebranchedUsers);
+        backBranch(backUsers);
     ***REMOVED***
 
-    private void rebranching(UserManager userManager, List<OimUserDto> rebranchedUsers, boolean isRebranching) {
-        String branchName = isRebranching ? "temp" : "main";
+    private void rebranching(List<OimUserDto> rebranchedUsers) {
         rebranchedUsers.forEach(oimUserDto -> {
-            String branch = isRebranching ? oimUserDto.getTmpBranch() : oimUserDto.getMainBranch();
             if (!oimUserDto.getIsClosureSent()) {
-                User user = new User(String.valueOf(oimUserDto.getUsrKey()));
-                user.setAttribute("CurrentBranch2", branch);
-                log.info("Actualize user with key: " + oimUserDto.getUsrKey() + ". Current (" + branchName + ") branch is: " + branch);
+                log.info("Actualize user with key: " + oimUserDto.getUsrKey() + ". Current (temp) branch is: " + oimUserDto.getTmpBranch());
                 try {
-                    userManager.modify(user);
+                    jdbcQueryService.updateOimUsrForRebranch(oimUserDto.getTmpBranch(), oimUserDto.getUsrKey());
                     omnitrackerApiService.callOmniTrackerClosureService(oimUserDto.getEmpNumber(), oimUserDto.getObjectId(), ResponseCodeEnum.SC_CC_RESOLVED, "Вирішено", "");
                 ***REMOVED*** catch (Exception e) {
                     log.error("Can't modify user with key: " + oimUserDto.getUsrKey(), e);
@@ -80,6 +70,17 @@ public class OmnitrackerJob {
                 ***REMOVED***
             ***REMOVED***
             jdbcQueryService.updateOmniRequestQuery(oimUserDto.getEmpNumber(), oimUserDto.getObjectId(), Collections.singletonMap("IS_PROCESSED", "1"));
+        ***REMOVED***);
+    ***REMOVED***
+
+    private void backBranch(List<OimUserDto> rebranchedUsers) {
+        rebranchedUsers.forEach(oimUserDto -> {
+            log.info("Actualize user with key: " + oimUserDto.getUsrKey() + ". Current (main) branch is: " + oimUserDto.getMainBranch());
+            try {
+                jdbcQueryService.updateOimUsrForRebranch(oimUserDto.getMainBranch(), oimUserDto.getUsrKey());
+            ***REMOVED*** catch (Exception e) {
+                log.error("Can't modify user with key: " + oimUserDto.getUsrKey(), e);
+            ***REMOVED***
         ***REMOVED***);
     ***REMOVED***
 

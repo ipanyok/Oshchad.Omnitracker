@@ -24,13 +24,17 @@ public class RebranchProcessor implements OmniRequestProcessor {
 
     @Override
     public void process(OmniTrackerRequest request) {
+        java.sql.Date endDate = null;
+        if (request.getAdditionalInfo().getEndDate() != null && !request.getAdditionalInfo().getEndDate().equals("")) {
+            endDate = java.sql.Date.valueOf(request.getAdditionalInfo().getEndDate().substring(0, request.getAdditionalInfo().getEndDate().indexOf("T")));
+        ***REMOVED***
         SqlParameterSource namedParameters = new MapSqlParameterSource()
                 .addValue("objectId", request.getObjectID())
                 .addValue("empNumber", request.getAdditionalInfo().getEmpNumber())
                 .addValue("mainBranch", request.getAdditionalInfo().getMainBranch())
                 .addValue("tmpBranch", request.getAdditionalInfo().getTmpBranch())
                 .addValue("startDate", java.sql.Date.valueOf(request.getAdditionalInfo().getStartDate().substring(0, request.getAdditionalInfo().getStartDate().indexOf("T"))))
-                .addValue("endDate", java.sql.Date.valueOf(request.getAdditionalInfo().getEndDate().substring(0, request.getAdditionalInfo().getEndDate().indexOf("T"))))
+                .addValue("endDate", endDate)
                 .addValue("localDate", LocalDateTime.now());
         Integer execute = jdbcTemplate.execute("insert into omni_request (OBJECT_ID, EMP_NO, MAINBRANCH, TEMPBRANCH, REBRANCHINGSTARTDATE, REBRANCHINGENDDATE, CHANGED_AT) VALUES (:objectId, :empNumber, :mainBranch, :tmpBranch, :startDate, :endDate, :localDate)",
                 namedParameters,
