@@ -13,6 +13,7 @@ import java.sql.PreparedStatement;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -181,22 +182,28 @@ public class JdbcQueryService {
 
     private static final String CHECK_SOURCE_ID_QUERY = "SELECT ORG_UDF_HRPARENTORGCODE FROM ACT WHERE ORG_UDF_HRORGCODE = :sourceId";
 
-    private static final String OIM_GET_ALL_USERS_WITH_START_REBRANCHING_QUERY =
-            "select usr.usr_key USR_KEY, usr.USR_UDF_OBJECTID USR_UDF_OBJECTID, usr.USR_UDF_TEMPBRANCH USR_UDF_TEMPBRANCH, usr.USR_EMP_NO USR_EMP_NO, OMNI_REQUEST.IS_CLOSURE_SENT IS_CLOSURE_SENT " +
-                    "from usr, OMNI_REQUEST " +
-                    "where usr.USR_EMP_NO = OMNI_REQUEST.EMP_NO " +
-                    "and (USR_UDF_CURRENTBRANCH2 <> USR_UDF_TEMPBRANCH or (USR_UDF_CURRENTBRANCH2 is null and USR_UDF_TEMPBRANCH is not null)) " +
-                    "and USR_UDF_REBRANCHINGSTARTDATE <=sysdate " +
-                    "and USR_UDF_REBRANCHINGENDDATE >= sysdate " +
-                    "and OMNI_REQUEST.IS_PROCESSED = 0 and OMNI_REQUEST.IS_SAVED = 1";
+    private static final String OIM_GET_ALL_USERS_WITH_START_REBRANCHING_QUERY = "select usr.usr_key USR_KEY, usr.USR_UDF_OBJECTID USR_UDF_OBJECTID, usr.USR_UDF_TEMPBRANCH USR_UDF_TEMPBRANCH, usr.USR_EMP_NO USR_EMP_NO, OMNI_REQUEST.IS_CLOSURE_SENT IS_CLOSURE_SENT " +
+            "from usr, OMNI_REQUEST " +
+            "where usr.USR_EMP_NO = OMNI_REQUEST.EMP_NO " +
+            "and (USR_UDF_CURRENTBRANCH2 <> USR_UDF_TEMPBRANCH or (USR_UDF_CURRENTBRANCH2 is null and USR_UDF_TEMPBRANCH is not null)) " +
+            "and sysdate between USR_UDF_REBRANCHINGSTARTDATE and nvl(USR_UDF_REBRANCHINGENDDATE, '31.12.2099') " +
+            "and OMNI_REQUEST.IS_PROCESSED = 0 and OMNI_REQUEST.IS_SAVED = 1";
 
-    private static final String OIM_GET_ALL_USERS_WITH_END_REBRANCHING_QUERY =
-            "select usr.usr_key USR_KEY, usr.USR_UDF_OBJECTID USR_UDF_OBJECTID, usr.USR_UDF_MAINBRANCH USR_UDF_MAINBRANCH, usr.USR_EMP_NO USR_EMP_NO, OMNI_REQUEST.IS_CLOSURE_SENT IS_CLOSURE_SENT " +
-                    "from usr, OMNI_REQUEST " +
-                    "where usr.USR_EMP_NO = OMNI_REQUEST.EMP_NO " +
-                    "and (USR_UDF_CURRENTBRANCH2 <> USR_UDF_MAINBRANCH and USR_UDF_MAINBRANCH is not null or (USR_UDF_CURRENTBRANCH2 is null and USR_UDF_TEMPBRANCH is not null)) " +
-                    "and (USR_UDF_REBRANCHINGSTARTDATE > sysdate or USR_UDF_REBRANCHINGENDDATE < sysdate) " +
-                    "and OMNI_REQUEST.IS_PROCESSED = 0 and OMNI_REQUEST.IS_SAVED = 1";
+    private static final String OIM_GET_ALL_USERS_WITH_END_REBRANCHING_QUERY = "select usr.usr_key USR_KEY, usr.USR_UDF_OBJECTID USR_UDF_OBJECTID, usr.USR_UDF_MAINBRANCH USR_UDF_MAINBRANCH, usr.USR_EMP_NO USR_EMP_NO, OMNI_REQUEST.IS_CLOSURE_SENT IS_CLOSURE_SENT " +
+            "from usr, OMNI_REQUEST " +
+            "where usr.USR_EMP_NO = OMNI_REQUEST.EMP_NO " +
+            "and (USR_UDF_CURRENTBRANCH2 <> USR_UDF_MAINBRANCH and USR_UDF_MAINBRANCH is not null or (USR_UDF_CURRENTBRANCH2 is null and USR_UDF_TEMPBRANCH is not null)) " +
+            "and sysdate >= nvl(USR_UDF_REBRANCHINGENDDATE, '31.12.2099') " +
+            "and OMNI_REQUEST.IS_PROCESSED = 1 and OMNI_REQUEST.IS_SAVED = 1";
+
+    private static final String OIM_UPDATE_USR_QUERY = "update usr set usr_udf_currentbranch2=:branch where usr_key=:usrKey";
+
+    public void updateOimUsrForRebranch(String branch, Long usrKey) {
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("branch", branch)
+                .addValue("usrKey", usrKey);
+        jdbcTemplate.execute(OIM_UPDATE_USR_QUERY, params, PreparedStatement::executeUpdate);
+    ***REMOVED***
 
     public List<OimUserDto> findUsersForRebranching() {
         return jdbcTemplate.query(OIM_GET_ALL_USERS_WITH_START_REBRANCHING_QUERY, (rs, rowNum) -> OimUserDto.builder()
@@ -327,16 +334,22 @@ public class JdbcQueryService {
     ***REMOVED***
 
     public List<OimUserDto> findAllUnprocessedRequests() {
-        return jdbcTemplate.query(OMNI_FIND_ALL_UNPROCESSED_REQUESTS_QUERY, (rs, rowNum) -> OimUserDto.builder()
-                .objectId(rs.getString("OBJECT_ID"))
-                .empNumber(rs.getString("EMP_NO"))
-                .mainBranch(rs.getString("MAINBRANCH"))
-                .tmpBranch(rs.getString("TEMPBRANCH"))
-                .startDate(new SimpleDateFormat("yyyy-MM-dd").format(rs.getDate("REBRANCHINGSTARTDATE")))
-                .endDate(new SimpleDateFormat("yyyy-MM-dd").format(rs.getDate("REBRANCHINGENDDATE")))
-                .isPickupSent(rs.getBoolean("IS_PICKUP_SENT"))
-                .isClosureSent(rs.getBoolean("IS_CLOSURE_SENT"))
-                .build());
+        return jdbcTemplate.query(OMNI_FIND_ALL_UNPROCESSED_REQUESTS_QUERY, (rs, rowNum) -> {
+            String endDate = null;
+            if (rs.getDate("REBRANCHINGENDDATE") != null && !rs.getDate("REBRANCHINGENDDATE").equals("")) {
+                endDate = new SimpleDateFormat("yyyy-MM-dd").format(rs.getDate("REBRANCHINGENDDATE"));
+            ***REMOVED***
+            return OimUserDto.builder()
+                    .objectId(rs.getString("OBJECT_ID"))
+                    .empNumber(rs.getString("EMP_NO"))
+                    .mainBranch(rs.getString("MAINBRANCH"))
+                    .tmpBranch(rs.getString("TEMPBRANCH"))
+                    .startDate(new SimpleDateFormat("yyyy-MM-dd").format(rs.getDate("REBRANCHINGSTARTDATE")))
+                    .endDate(endDate)
+                    .isPickupSent(rs.getBoolean("IS_PICKUP_SENT"))
+                    .isClosureSent(rs.getBoolean("IS_CLOSURE_SENT"))
+                    .build();
+        ***REMOVED***);
     ***REMOVED***
 
     public List<OimUserDto> findAllUnprocessedBlockRequests() {
@@ -403,7 +416,10 @@ public class JdbcQueryService {
     ***REMOVED***
 
     public Integer updateOimUser(OimUserDto oimUserDto) {
-        Date endDate = Date.valueOf(Date.valueOf(oimUserDto.getEndDate()).toLocalDate().plusDays(1));
+        Date endDate = Date.valueOf(LocalDate.of(2999, 12, 31));
+        if (oimUserDto.getEndDate() != null && !oimUserDto.getEndDate().equals("")) {
+            endDate = Date.valueOf(Date.valueOf(oimUserDto.getEndDate()).toLocalDate().plusDays(1));
+        ***REMOVED***
         SqlParameterSource namedParametersForUpdate = new MapSqlParameterSource()
                 .addValue("empNumber", oimUserDto.getEmpNumber())
                 .addValue("objectId", oimUserDto.getObjectId())
@@ -466,17 +482,6 @@ public class JdbcQueryService {
                 "USR_UDF_REBRANCHINGSTARTDATE = null, " +
                 "USR_UDF_REBRANCHINGENDDATE = null " +
                 "WHERE USR_KEY = :usrKey", namedParametersForUpdate, PreparedStatement::executeUpdate
-        );
-    ***REMOVED***
-
-    // todo to remove (it's for testing)
-    public Integer updateOimUserEndDate(String empNumber) {
-//        throw new RuntimeException("Error");
-        SqlParameterSource namedParametersForUpdate = new MapSqlParameterSource()
-                .addValue("empNumber", empNumber);
-        return jdbcTemplate.execute("update usr set " +
-                "USR_UDF_REBRANCHINGENDDATE = null " +
-                "WHERE USR_EMP_NO = :empNumber", namedParametersForUpdate, PreparedStatement::executeUpdate
         );
     ***REMOVED***
 
