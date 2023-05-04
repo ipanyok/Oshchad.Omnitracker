@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StreamUtils;
 import ua.datastech.omnitracker.model.dto.ActionType;
 import ua.datastech.omnitracker.model.oim.OmniTrackerAttachmentInfoRequest;
 import ua.datastech.omnitracker.model.oim.OmniTrackerRequest;
@@ -39,26 +40,29 @@ public class OmnitrackerService {
     ***REMOVED***
 
     public void saveOmniAttachmentRequest(OmniTrackerAttachmentInfoRequest request) {
-        if (request != null && request.getAttachments() != null) {
-            try {
-                request.getAttachments().forEach(attachment -> {
-                    SqlParameterSource namedParameters = new MapSqlParameterSource()
-                            .addValue("objectId", request.getObjectID())
-                            .addValue("oid", attachment.getOid())
-                            .addValue("fileName", attachment.getFileName())
-                            .addValue("fileSize", attachment.getFileSize());
-                    List<String> ids = jdbcTemplate.query("SELECT ID FROM OMNI_BLOCK_REQUEST WHERE OBJECT_ID = :objectId", namedParameters, (rs, rowNum) -> rs.getString("ID"));
-                    Integer execute = jdbcTemplate.execute("insert into OMNI_BLOCK_ATTACHMENT (OMNI_BLOCK_REQUEST_ID, OID, FILENAME, FILESIZE) VALUES (" + ids.get(0) + ", :oid, :fileName, :fileSize)",
-                            namedParameters,
-                            PreparedStatement::executeUpdate
-                    );
-                    if (execute != 0) {
-                        log.info("Attachment data for request " + request.getObjectID() + " was saved.");
-                    ***REMOVED***
-                ***REMOVED***);
-            ***REMOVED*** catch (Exception e) {
-                log.error("Can't save attachment for objectId: " + request.getObjectID(), e.getMessage());
-                closeRequest(request.getObjectID(), "Помилка під час збереження вкладення.");
+        String action = jdbcQueryService.getAttachmentAction(request.getObjectID());
+        if (action != null && (action.equals(ActionType.ENABLE_BY_FILE.name()) || action.equals(ActionType.DISABLE_BY_FILE.name()))) {
+            if (request != null && request.getAttachments() != null) {
+                try {
+                    request.getAttachments().forEach(attachment -> {
+                        SqlParameterSource namedParameters = new MapSqlParameterSource()
+                                .addValue("objectId", request.getObjectID())
+                                .addValue("oid", attachment.getOid())
+                                .addValue("fileName", attachment.getFileName())
+                                .addValue("fileSize", attachment.getFileSize());
+                        List<String> ids = jdbcTemplate.query("SELECT ID FROM OMNI_BLOCK_REQUEST WHERE OBJECT_ID = :objectId", namedParameters, (rs, rowNum) -> rs.getString("ID"));
+                        Integer execute = jdbcTemplate.execute("insert into OMNI_BLOCK_ATTACHMENT (OMNI_BLOCK_REQUEST_ID, OID, FILENAME, FILESIZE) VALUES (" + ids.get(0) + ", :oid, :fileName, :fileSize)",
+                                namedParameters,
+                                PreparedStatement::executeUpdate
+                        );
+                        if (execute != 0) {
+                            log.info("Attachment data for request " + request.getObjectID() + " was saved.");
+                        ***REMOVED***
+                    ***REMOVED***);
+                ***REMOVED*** catch (Exception e) {
+                    log.error("Can't save attachment for objectId: " + request.getObjectID(), e.getMessage());
+                    closeRequest(request.getObjectID(), "Помилка під час збереження вкладення.");
+                ***REMOVED***
             ***REMOVED***
         ***REMOVED***
     ***REMOVED***
