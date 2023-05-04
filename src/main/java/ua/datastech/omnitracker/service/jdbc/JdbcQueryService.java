@@ -198,6 +198,25 @@ public class JdbcQueryService {
 
     private static final String OIM_UPDATE_USR_QUERY = "update usr set usr_udf_currentbranch2=:branch where usr_key=:usrKey";
 
+    private static final String OMNI_CHECK_ATTACHMENT_QUERY = "select ACTION from OMNI_BLOCK_REQUEST where OBJECT_ID = :objectId";
+
+//    private static final String OMNI_CHECK_CURRENT_BRANCH_QUERY = "select OMNI_REQUEST.TEMPBRANCH TEMP_BRANCH, USR.USR_UDF_CURRENTBRANCH2 CURRENT_BRANCH, OMNI_REQUEST.IS_CLOSURE_SENT IS_CLOSURE_SENT " +
+//            "from usr, OMNI_REQUEST " +
+//            "where usr.USR_EMP_NO = OMNI_REQUEST.EMP_NO " +
+//            "and OMNI_REQUEST.REBRANCHINGSTARTDATE = sysdate " +
+//            "and OMNI_REQUEST.IS_PROCESSED = 0 and OMNI_REQUEST.IS_SAVED = 1";
+
+    public String getAttachmentAction(String objectId) {
+        String result = null;
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("objectId", objectId);
+        List<String> query = jdbcTemplate.query(OMNI_CHECK_ATTACHMENT_QUERY, params, (rs, rowNum) -> rs.getString(1));
+        if (!query.isEmpty()) {
+            result = query.get(0);
+        ***REMOVED***
+        return result;
+    ***REMOVED***
+
     public void updateOimUsrForRebranch(String branch, Long usrKey) {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("branch", branch)

@@ -25,31 +25,36 @@ public class OmnitrackerJob {
         List<OimUserDto> omniData = jdbcQueryService.findAllUnprocessedRequests();
 
         omniData.forEach(oimUserDto -> {
-            if (!oimUserDto.getIsPickupSent()) {
-                omnitrackerApiService.callOmniTrackerPickupService(oimUserDto.getEmpNumber(), oimUserDto.getObjectId());
-            ***REMOVED***
-
-            List<Long> ids = jdbcQueryService.findOimUserByEmpNumber(oimUserDto.getEmpNumber());
-
-            if (ids.isEmpty()) {
-                log.info("User [empNumber=" + oimUserDto.getEmpNumber() + "] wasn't found.");
-
-                jdbcQueryService.updateOmniRequestQuery(oimUserDto.getEmpNumber(), oimUserDto.getObjectId(), Collections.singletonMap("IS_PROCESSED", "1"));
-
-                if (!oimUserDto.getIsClosureSent()) {
-                    omnitrackerApiService.callOmniTrackerClosureService(oimUserDto.getEmpNumber(), oimUserDto.getObjectId(), ResponseCodeEnum.SC_CC_REJECTED, "Відхилено. Користувач [empNumber=" + oimUserDto.getEmpNumber() + "] не знайдений в системі ОІМ.", "");
+            try {
+                if (!oimUserDto.getIsPickupSent()) {
+                    omnitrackerApiService.callOmniTrackerPickupService(oimUserDto.getEmpNumber(), oimUserDto.getObjectId());
                 ***REMOVED***
-            ***REMOVED*** else {
-                Integer updateCount = jdbcQueryService.updateOimUser(oimUserDto);
-                if (updateCount != 0) {
-                    jdbcQueryService.updateOmniRequestQuery(oimUserDto.getEmpNumber(), oimUserDto.getObjectId(), Collections.singletonMap("IS_SAVED", "1"));
-                    log.info("User[empNumber=" + oimUserDto.getEmpNumber() + "] data was saved in OIM");
+
+                List<Long> ids = jdbcQueryService.findOimUserByEmpNumber(oimUserDto.getEmpNumber());
+
+                if (ids.isEmpty()) {
+                    log.info("User [empNumber=" + oimUserDto.getEmpNumber() + "] wasn't found.");
+
+                    jdbcQueryService.updateOmniRequestQuery(oimUserDto.getEmpNumber(), oimUserDto.getObjectId(), Collections.singletonMap("IS_PROCESSED", "1"));
+
+                    if (!oimUserDto.getIsClosureSent()) {
+                        omnitrackerApiService.callOmniTrackerClosureService(oimUserDto.getEmpNumber(), oimUserDto.getObjectId(), ResponseCodeEnum.SC_CC_REJECTED, "Відхилено. Користувач [empNumber=" + oimUserDto.getEmpNumber() + "] не знайдений в системі ОІМ.", "");
+                    ***REMOVED***
+                ***REMOVED*** else {
+                    Integer updateCount = jdbcQueryService.updateOimUser(oimUserDto);
+                    if (updateCount != 0) {
+                        jdbcQueryService.updateOmniRequestQuery(oimUserDto.getEmpNumber(), oimUserDto.getObjectId(), Collections.singletonMap("IS_SAVED", "1"));
+                        log.info("User[empNumber=" + oimUserDto.getEmpNumber() + "] data was saved in OIM");
+                    ***REMOVED***
                 ***REMOVED***
+            ***REMOVED*** catch (Exception e) {
+                log.error("Can't process " + oimUserDto.getObjectId() + " request", e);
             ***REMOVED***
         ***REMOVED***);
     ***REMOVED***
 
-    @Scheduled(cron = "@daily")
+    //    @Scheduled(cron = "@daily")
+    @Scheduled(cron = "0 0/15 * * * ?")
     public void processRebranching() {
         List<OimUserDto> rebranchedUsers = jdbcQueryService.findUsersForRebranching();
         List<OimUserDto> backUsers = jdbcQueryService.findUsersForBackToMainBranch();
@@ -60,7 +65,7 @@ public class OmnitrackerJob {
     private void rebranching(List<OimUserDto> rebranchedUsers) {
         rebranchedUsers.forEach(oimUserDto -> {
             if (!oimUserDto.getIsClosureSent()) {
-                log.info("Actualize user with key: " + oimUserDto.getUsrKey() + ". Current (temp) branch is: " + oimUserDto.getTmpBranch());
+                log.info("Actualize user with key: " + oimUserDto.getEmpNumber() + ". Current (temp) branch is: " + oimUserDto.getTmpBranch());
                 try {
                     jdbcQueryService.updateOimUsrForRebranch(oimUserDto.getTmpBranch(), oimUserDto.getUsrKey());
                     omnitrackerApiService.callOmniTrackerClosureService(oimUserDto.getEmpNumber(), oimUserDto.getObjectId(), ResponseCodeEnum.SC_CC_RESOLVED, "Вирішено", "");
@@ -75,7 +80,7 @@ public class OmnitrackerJob {
 
     private void backBranch(List<OimUserDto> rebranchedUsers) {
         rebranchedUsers.forEach(oimUserDto -> {
-            log.info("Actualize user with key: " + oimUserDto.getUsrKey() + ". Current (main) branch is: " + oimUserDto.getMainBranch());
+            log.info("Actualize user with key: " + oimUserDto.getEmpNumber() + ". Current (main) branch is: " + oimUserDto.getMainBranch());
             try {
                 jdbcQueryService.updateOimUsrForRebranch(oimUserDto.getMainBranch(), oimUserDto.getUsrKey());
             ***REMOVED*** catch (Exception e) {
