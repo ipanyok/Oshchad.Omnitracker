@@ -13,7 +13,6 @@ import java.sql.PreparedStatement;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -200,11 +199,21 @@ public class JdbcQueryService {
 
     private static final String OMNI_CHECK_ATTACHMENT_QUERY = "select ACTION from OMNI_BLOCK_REQUEST where OBJECT_ID = :objectId";
 
-//    private static final String OMNI_CHECK_CURRENT_BRANCH_QUERY = "select OMNI_REQUEST.TEMPBRANCH TEMP_BRANCH, USR.USR_UDF_CURRENTBRANCH2 CURRENT_BRANCH, OMNI_REQUEST.IS_CLOSURE_SENT IS_CLOSURE_SENT " +
-//            "from usr, OMNI_REQUEST " +
-//            "where usr.USR_EMP_NO = OMNI_REQUEST.EMP_NO " +
-//            "and OMNI_REQUEST.REBRANCHINGSTARTDATE = sysdate " +
-//            "and OMNI_REQUEST.IS_PROCESSED = 0 and OMNI_REQUEST.IS_SAVED = 1";
+    private static final String OMNI_CHECK_CURRENT_BRANCH_QUERY = "select OMNI_REQUEST.EMP_NO EMP_NO, OMNI_REQUEST.OBJECT_ID OBJECT_ID, OMNI_REQUEST.TEMPBRANCH TEMP_BRANCH, USR.USR_UDF_CURRENTBRANCH2 CURRENT_BRANCH, OMNI_REQUEST.IS_CLOSURE_SENT IS_CLOSURE_SENT " +
+            "from usr, OMNI_REQUEST " +
+            "where usr.USR_EMP_NO = OMNI_REQUEST.EMP_NO " +
+            "and OMNI_REQUEST.REBRANCHINGSTARTDATE = sysdate " +
+            "and OMNI_REQUEST.IS_PROCESSED = 0 and OMNI_REQUEST.IS_SAVED = 1";
+
+    public List<OimUserDto> getUsersBranches() {
+        return jdbcTemplate.query(OMNI_CHECK_CURRENT_BRANCH_QUERY, (rs, rowNum) -> OimUserDto.builder()
+                .tmpBranch(rs.getString("TEMP_BRANCH"))
+                .currentBranch(rs.getString("CURRENT_BRANCH"))
+                .objectId(rs.getString("OBJECT_ID"))
+                .empNumber(rs.getString("EMP_NO"))
+                .isClosureSent(rs.getBoolean("IS_CLOSURE_SENT"))
+                .build());
+    ***REMOVED***
 
     public String getAttachmentAction(String objectId) {
         String result = null;

@@ -14,6 +14,7 @@ public class OimUserDto {
     private String empNumber;
     private String mainBranch;
     private String tmpBranch;
+    private String currentBranch;
     private String startDate;
     private String endDate;
     private Boolean isPickupSent;
