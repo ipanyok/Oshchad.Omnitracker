@@ -1,5 +1,6 @@
 package ua.datastech.omnitracker.model.oim;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Data;
@@ -26,4 +27,7 @@ public class AdditionalInfo {
     private String date;
     private List<Persons> persons;
     private List<Organizations> organizations;
+
+    @JsonProperty("isClosed")
+    private Boolean isClosed;
 ***REMOVED***

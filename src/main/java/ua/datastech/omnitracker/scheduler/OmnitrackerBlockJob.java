@@ -52,10 +52,16 @@ public class OmnitrackerBlockJob {
                 List<OimUserDto> usersDataToBlock = jdbcQueryService.findUsersToProcess(currentDate, oimUserDto.getObjectId());
                 List<ProcessedUser> users = null;
                 if (oimUserDto.getAction().equals(ActionType.DISABLE_USER.name())) {
-                    users = jdbcQueryService.findUsersToBlockByEmployeeNumber(usersDataToBlock.stream().map(OimUserDto::getEmpNumber).collect(Collectors.toList()));
+                    List<String> empNumbers = usersDataToBlock.stream().map(OimUserDto::getEmpNumber).collect(Collectors.toList());
+                    if (empNumbers != null && !empNumbers.isEmpty()) {
+                        users = jdbcQueryService.findUsersToBlockByEmployeeNumber(empNumbers);
+                    ***REMOVED***
                 ***REMOVED***
                 if (oimUserDto.getAction().equals(ActionType.ENABLE_USER.name())) {
-                    users = jdbcQueryService.findUsersToEnableByEmployeeNumber(usersDataToBlock.stream().map(OimUserDto::getEmpNumber).collect(Collectors.toList()));
+                    List<String> empNumbers = usersDataToBlock.stream().map(OimUserDto::getEmpNumber).collect(Collectors.toList());
+                    if (empNumbers != null && !empNumbers.isEmpty()) {
+                        users = jdbcQueryService.findUsersToEnableByEmployeeNumber(empNumbers);
+                    ***REMOVED***
                 ***REMOVED***
                 if (oimUserDto.getAction().equals(ActionType.DISABLE_REGION.name())) {
                     List<String> sourceIds = usersDataToBlock.stream().map(OimUserDto::getSourceId).collect(Collectors.toList());
