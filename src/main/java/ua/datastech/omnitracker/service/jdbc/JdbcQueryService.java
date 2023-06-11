@@ -205,6 +205,8 @@ public class JdbcQueryService {
             "and OMNI_REQUEST.REBRANCHINGSTARTDATE = sysdate " +
             "and OMNI_REQUEST.IS_PROCESSED = 0 and OMNI_REQUEST.IS_SAVED = 1";
 
+    private static final String OMNI_BLOCK_IS_CLOSE_QUERY = "select * from OMNI_BLOCK_REQUEST where OBJECT_ID = :objectId";
+
     public List<OimUserDto> getUsersBranches() {
         return jdbcTemplate.query(OMNI_CHECK_CURRENT_BRANCH_QUERY, (rs, rowNum) -> OimUserDto.builder()
                 .tmpBranch(rs.getString("TEMP_BRANCH"))
@@ -213,6 +215,23 @@ public class JdbcQueryService {
                 .empNumber(rs.getString("EMP_NO"))
                 .isClosureSent(rs.getBoolean("IS_CLOSURE_SENT"))
                 .build());
+    ***REMOVED***
+
+    public OimUserDto getCloseRequestData(String objectId) {
+        OimUserDto result = null;
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("objectId", objectId);
+        List<OimUserDto> query = jdbcTemplate.query(OMNI_BLOCK_IS_CLOSE_QUERY, params, (rs, rowNum) -> OimUserDto.builder()
+                .id(rs.getLong("ID"))
+                .objectId(rs.getString("OBJECT_ID"))
+                .action(rs.getString("ACTION"))
+                .isClosureSent(rs.getBoolean("IS_CLOSURE_SENT"))
+                .isPickupSent(rs.getBoolean("IS_PICKUP_SENT"))
+                .build());
+        if (!query.isEmpty()) {
+            result = query.get(0);
+        ***REMOVED***
+        return result;
     ***REMOVED***
 
     public String getAttachmentAction(String objectId) {
