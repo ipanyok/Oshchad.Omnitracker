@@ -15,5 +15,6 @@ public class OmniTrackerAttachmentInfoRequest {
     @EqualsAndHashCode.Include
     private String objectID;
     private List<Attachments> attachments;
+    private AdditionalInfo additionalInfo;
 
 ***REMOVED***
