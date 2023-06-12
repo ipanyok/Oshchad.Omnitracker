@@ -9,9 +9,13 @@ import ua.datastech.omnitracker.model.omni.api.ResponseCodeEnum;
 import ua.datastech.omnitracker.service.jdbc.JdbcQueryService;
 import ua.datastech.omnitracker.service.tracker.api.OmnitrackerApiService;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static java.time.temporal.ChronoUnit.MINUTES;
 
 @Service
 @Slf4j
@@ -24,9 +28,13 @@ public class OmnitrackerJob {
     @Scheduled(cron = "0 0/10 * * * ?")
     public void saveOmniDataToOIM() {
         List<OimUserDto> omniData = jdbcQueryService.findAllUnprocessedRequests();
-
+        LocalDateTime currentDate = LocalDateTime.now();
         omniData.forEach(oimUserDto -> {
             try {
+                if (checkIfDateExpired(oimUserDto, currentDate)) {
+                    return;
+                ***REMOVED***
+
                 if (!oimUserDto.getIsPickupSent()) {
                     omnitrackerApiService.callOmniTrackerPickupService(oimUserDto.getEmpNumber(), oimUserDto.getObjectId());
                 ***REMOVED***
@@ -107,6 +115,19 @@ public class OmnitrackerJob {
                 ***REMOVED***
             ***REMOVED***
         ***REMOVED***);
+    ***REMOVED***
+
+    private boolean checkIfDateExpired(OimUserDto oimUserDto, LocalDateTime currentDate) {
+        boolean isExpired = false;
+        if (LocalDateTime.parse(oimUserDto.getStartDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")).truncatedTo(MINUTES).isBefore(currentDate.truncatedTo(MINUTES)) && !oimUserDto.getIsClosureSent()) {
+            if (!oimUserDto.getIsPickupSent()) {
+                omnitrackerApiService.callOmniTrackerPickupService(oimUserDto.getEmpNumber(), oimUserDto.getObjectId());
+            ***REMOVED***
+            omnitrackerApiService.callOmniTrackerClosureService(oimUserDto.getEmpNumber(), oimUserDto.getObjectId(), ResponseCodeEnum.SC_CC_REJECTED, "Відхилено. Дата старту менша поточної", "");
+            jdbcQueryService.updateOmniRequestQuery(oimUserDto.getEmpNumber(), oimUserDto.getObjectId(), Collections.singletonMap("IS_PROCESSED", "1"));
+            isExpired = true;
+        ***REMOVED***
+        return isExpired;
     ***REMOVED***
 
 ***REMOVED***
