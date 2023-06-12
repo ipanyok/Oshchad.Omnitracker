@@ -9,13 +9,10 @@ import ua.datastech.omnitracker.model.omni.api.ResponseCodeEnum;
 import ua.datastech.omnitracker.service.jdbc.JdbcQueryService;
 import ua.datastech.omnitracker.service.tracker.api.OmnitrackerApiService;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static java.time.temporal.ChronoUnit.MINUTES;
 
 @Service
 @Slf4j
@@ -28,7 +25,7 @@ public class OmnitrackerJob {
     @Scheduled(cron = "0 0/10 * * * ?")
     public void saveOmniDataToOIM() {
         List<OimUserDto> omniData = jdbcQueryService.findAllUnprocessedRequests();
-        LocalDateTime currentDate = LocalDateTime.now();
+        LocalDate currentDate = LocalDate.now();
         omniData.forEach(oimUserDto -> {
             try {
                 if (checkIfDateExpired(oimUserDto, currentDate)) {
@@ -117,9 +114,9 @@ public class OmnitrackerJob {
         ***REMOVED***);
     ***REMOVED***
 
-    private boolean checkIfDateExpired(OimUserDto oimUserDto, LocalDateTime currentDate) {
+    private boolean checkIfDateExpired(OimUserDto oimUserDto, LocalDate currentDate) {
         boolean isExpired = false;
-        if (LocalDateTime.parse(oimUserDto.getStartDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")).truncatedTo(MINUTES).isBefore(currentDate.truncatedTo(MINUTES)) && !oimUserDto.getIsClosureSent()) {
+        if (LocalDate.parse(oimUserDto.getStartDate()).isBefore(currentDate) && !oimUserDto.getIsClosureSent()) {
             if (!oimUserDto.getIsPickupSent()) {
                 omnitrackerApiService.callOmniTrackerPickupService(oimUserDto.getEmpNumber(), oimUserDto.getObjectId());
             ***REMOVED***
