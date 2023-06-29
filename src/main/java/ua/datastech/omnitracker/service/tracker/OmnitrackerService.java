@@ -8,13 +8,11 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Service;
 import ua.datastech.omnitracker.model.dto.ActionType;
-import ua.datastech.omnitracker.model.dto.OimUserDto;
 import ua.datastech.omnitracker.model.oim.OmniTrackerAttachmentInfoRequest;
 import ua.datastech.omnitracker.model.oim.OmniTrackerRequest;
 import ua.datastech.omnitracker.model.omni.api.ResponseCodeEnum;
 import ua.datastech.omnitracker.service.jdbc.JdbcQueryService;
 import ua.datastech.omnitracker.service.tracker.api.OmnitrackerApiService;
-import ua.datastech.omnitracker.service.tracker.close.CloseRequest;
 import ua.datastech.omnitracker.service.tracker.processor.OmniRequestProcessor;
 
 import java.sql.PreparedStatement;
@@ -34,7 +32,6 @@ public class OmnitrackerService {
     private final JdbcQueryService jdbcQueryService;
 
     private final List<OmniRequestProcessor> omniRequestProcessors;
-    private final List<CloseRequest> closeRequests;
 
     public void saveOmniBlockRequest(OmniTrackerRequest request) {
         OmniRequestProcessor processor = getProcessor(request);
@@ -43,9 +40,8 @@ public class OmnitrackerService {
 
     public void saveOmniAttachmentRequest(OmniTrackerAttachmentInfoRequest request) {
         if (request.getAdditionalInfo() != null && request.getAdditionalInfo().getIsClosed() != null && request.getAdditionalInfo().getIsClosed()) {
-            OimUserDto closeRequestData = jdbcQueryService.getCloseRequestData(request.getObjectID());
-            CloseRequest closeRequest = getCloseRequest(closeRequestData.getAction());
-            closeRequest.cleanup(closeRequestData);
+            jdbcQueryService.updateBlockRequest(request.getObjectID());
+            jdbcQueryService.updateRebranchRequest(request.getObjectID()); // todo probably don't need 2 queries (use some param from request)
             return;
         ***REMOVED***
         String action = jdbcQueryService.getAttachmentAction(request.getObjectID());
@@ -93,13 +89,6 @@ public class OmnitrackerService {
                 .filter(omniRequestProcessor -> omniRequestProcessor.getActions().contains(actionName))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Can't find any processors"));
-    ***REMOVED***
-
-    private CloseRequest getCloseRequest(String action) {
-        return closeRequests.stream()
-                .filter(closeRequest -> closeRequest.getActions().contains(action))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Can't find any processors for close request"));
     ***REMOVED***
 
 ***REMOVED***
