@@ -187,6 +187,18 @@ public class OmnitrackerBlockJob {
         ***REMOVED***);
     ***REMOVED***
 
+    @Scheduled(cron = "0 0/10 * * * ?")
+    public void closeRequests() {
+        List<OimUserDto> requestsToClose = jdbcQueryService.getBlockRequestObjectIdsToClose();
+        requestsToClose.forEach(oimUserDto -> {
+            if (!oimUserDto.getIsPickupSent()) {
+                omnitrackerApiService.callOmniTrackerPickupService(null, oimUserDto.getObjectId());
+            ***REMOVED***
+            omnitrackerApiService.callOmniTrackerClosureService(null, oimUserDto.getObjectId(), ResponseCodeEnum.SC_CC_CANCELLED, "Відхилено. Обробка звернення завершена за ініціативою Банка.", "");
+            jdbcQueryService.updateOmniBlockRequestQuery(oimUserDto.getObjectId(), Collections.singletonMap("IS_PROCESSED", "1"));
+        ***REMOVED***);
+    ***REMOVED***
+
     private boolean checkIfDateExpired(OimUserDto oimUserDto, LocalDateTime currentDate) {
         boolean isExpired = false;
         if (LocalDateTime.parse(oimUserDto.getActionDate(), DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")).truncatedTo(MINUTES).isBefore(currentDate.truncatedTo(MINUTES)) && !oimUserDto.getIsClosureSent()) {

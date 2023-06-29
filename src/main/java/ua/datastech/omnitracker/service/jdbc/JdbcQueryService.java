@@ -33,16 +33,16 @@ public class JdbcQueryService {
             "set %s " +
             "WHERE OBJECT_ID = :objectId";
 
-    private final static String OMNI_FIND_ALL_UNPROCESSED_REQUESTS_QUERY = "select * from OMNI_REQUEST where IS_SAVED = 0 AND IS_PROCESSED = 0";
+    private final static String OMNI_FIND_ALL_UNPROCESSED_REQUESTS_QUERY = "select * from OMNI_REQUEST where IS_SAVED = 0 AND IS_PROCESSED = 0 AND IS_NEED_TO_CLOSE = 0";
 
     private final static String OMNI_FIND_ALL_BLOCK_UNPROCESSED_REQUESTS_QUERY = "select * " +
             "from OMNI_BLOCK_REQUEST " +
-            "WHERE IS_PROCESSED = 0 " +
+            "WHERE IS_PROCESSED = 0 AND IS_NEED_TO_CLOSE = 0 " +
             "AND ACTION IN ('DISABLE_USER', 'ENABLE_USER', 'DISABLE_REGION', 'ENABLE_REGION')";
 
     private final static String OMNI_FIND_ALL_BLOCK_ATTACHMENT_QUERY = "select * " +
             "from OMNI_BLOCK_REQUEST " +
-            "WHERE IS_PROCESSED = 0 " +
+            "WHERE IS_PROCESSED = 0 AND IS_NEED_TO_CLOSE = 0 " +
             "AND ACTION IN ('DISABLE_BY_FILE', 'ENABLE_BY_FILE')";
 
 
@@ -186,16 +186,20 @@ public class JdbcQueryService {
             "where usr.USR_EMP_NO = OMNI_REQUEST.EMP_NO " +
             "and (USR_UDF_CURRENTBRANCH2 <> USR_UDF_TEMPBRANCH or (USR_UDF_CURRENTBRANCH2 is null and USR_UDF_TEMPBRANCH is not null)) " +
             "and sysdate between USR_UDF_REBRANCHINGSTARTDATE and nvl(USR_UDF_REBRANCHINGENDDATE, '31.12.2099') " +
-            "and OMNI_REQUEST.IS_PROCESSED = 0 and OMNI_REQUEST.IS_SAVED = 1";
+            "and OMNI_REQUEST.IS_PROCESSED = 0 and OMNI_REQUEST.IS_SAVED = 1 AND OMNI_REQUEST.IS_NEED_TO_CLOSE = 0";
 
     private static final String OIM_GET_ALL_USERS_WITH_END_REBRANCHING_QUERY = "select usr.usr_key USR_KEY, usr.USR_UDF_OBJECTID USR_UDF_OBJECTID, usr.USR_UDF_MAINBRANCH USR_UDF_MAINBRANCH, usr.USR_EMP_NO USR_EMP_NO, OMNI_REQUEST.IS_CLOSURE_SENT IS_CLOSURE_SENT " +
             "from usr, OMNI_REQUEST " +
             "where usr.USR_EMP_NO = OMNI_REQUEST.EMP_NO " +
             "and (USR_UDF_CURRENTBRANCH2 <> USR_UDF_MAINBRANCH and USR_UDF_MAINBRANCH is not null or (USR_UDF_CURRENTBRANCH2 is null and USR_UDF_TEMPBRANCH is not null)) " +
             "and sysdate >= nvl(USR_UDF_REBRANCHINGENDDATE, '31.12.2099') " +
-            "and OMNI_REQUEST.IS_PROCESSED = 1 and OMNI_REQUEST.IS_SAVED = 1";
+            "and OMNI_REQUEST.IS_PROCESSED = 1 and OMNI_REQUEST.IS_SAVED = 1 AND OMNI_REQUEST.IS_NEED_TO_CLOSE = 0";
 
     private static final String OIM_UPDATE_USR_QUERY = "update usr set usr_udf_currentbranch2=:branch where usr_key=:usrKey";
+
+    private static final String OIM_UPDATE_BLOCK_QUERY = "update OMNI_BLOCK_REQUEST set IS_NEED_TO_CLOSE=1 where OBJECT_ID=:objectId";
+
+    private static final String OIM_UPDATE_REBRANCH_QUERY = "update OMNI_REQUEST set IS_NEED_TO_CLOSE=1 where OBJECT_ID=:objectId";
 
     private static final String OMNI_CHECK_ATTACHMENT_QUERY = "select ACTION from OMNI_BLOCK_REQUEST where OBJECT_ID = :objectId";
 
@@ -203,9 +207,39 @@ public class JdbcQueryService {
             "from usr, OMNI_REQUEST " +
             "where usr.USR_EMP_NO = OMNI_REQUEST.EMP_NO " +
             "and OMNI_REQUEST.REBRANCHINGSTARTDATE = sysdate " +
-            "and OMNI_REQUEST.IS_PROCESSED = 0 and OMNI_REQUEST.IS_SAVED = 1";
+            "and OMNI_REQUEST.IS_PROCESSED = 0 and OMNI_REQUEST.IS_SAVED = 1 AND OMNI_REQUEST.IS_NEED_TO_CLOSE = 0";
 
-    private static final String OMNI_BLOCK_IS_CLOSE_QUERY = "select * from OMNI_BLOCK_REQUEST where OBJECT_ID = :objectId";
+    private static final String OMNI_GET_ALL_BLOCK_TO_CLOSE_QUERY = "select OBJECT_ID, IS_PICKUP_SENT from OMNI_BLOCK_REQUEST where IS_NEED_TO_CLOSE = 1 AND IS_PROCESSED = 0";
+    private static final String OMNI_GET_ALL_REBRANCH_TO_CLOSE_QUERY = "select OBJECT_ID, IS_PICKUP_SENT, EMP_NO from OMNI_REQUEST where IS_NEED_TO_CLOSE = 1 AND IS_PROCESSED = 0";
+
+    public List<OimUserDto> getBlockRequestObjectIdsToClose() {
+        return jdbcTemplate.query(OMNI_GET_ALL_BLOCK_TO_CLOSE_QUERY, (rs, rowNum) ->
+                OimUserDto.builder()
+                        .objectId(rs.getString("OBJECT_ID"))
+                        .isPickupSent(rs.getBoolean("IS_PICKUP_SENT"))
+                        .build());
+    ***REMOVED***
+
+    public List<OimUserDto> getRebranchRequestObjectIdsToClose() {
+        return jdbcTemplate.query(OMNI_GET_ALL_REBRANCH_TO_CLOSE_QUERY, (rs, rowNum) ->
+                OimUserDto.builder()
+                        .objectId(rs.getString("OBJECT_ID"))
+                        .empNumber(rs.getString("EMP_NO"))
+                        .isPickupSent(rs.getBoolean("IS_PICKUP_SENT"))
+                        .build());
+    ***REMOVED***
+
+    public void updateBlockRequest(String objectId) {
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("objectId", objectId);
+        jdbcTemplate.execute(OIM_UPDATE_BLOCK_QUERY, params, PreparedStatement::executeUpdate);
+    ***REMOVED***
+
+    public void updateRebranchRequest(String objectId) {
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("objectId", objectId);
+        jdbcTemplate.execute(OIM_UPDATE_REBRANCH_QUERY, params, PreparedStatement::executeUpdate);
+    ***REMOVED***
 
     public List<OimUserDto> getUsersBranches() {
         return jdbcTemplate.query(OMNI_CHECK_CURRENT_BRANCH_QUERY, (rs, rowNum) -> OimUserDto.builder()
@@ -215,23 +249,6 @@ public class JdbcQueryService {
                 .empNumber(rs.getString("EMP_NO"))
                 .isClosureSent(rs.getBoolean("IS_CLOSURE_SENT"))
                 .build());
-    ***REMOVED***
-
-    public OimUserDto getCloseRequestData(String objectId) {
-        OimUserDto result = null;
-        SqlParameterSource params = new MapSqlParameterSource()
-                .addValue("objectId", objectId);
-        List<OimUserDto> query = jdbcTemplate.query(OMNI_BLOCK_IS_CLOSE_QUERY, params, (rs, rowNum) -> OimUserDto.builder()
-                .id(rs.getLong("ID"))
-                .objectId(rs.getString("OBJECT_ID"))
-                .action(rs.getString("ACTION"))
-                .isClosureSent(rs.getBoolean("IS_CLOSURE_SENT"))
-                .isPickupSent(rs.getBoolean("IS_PICKUP_SENT"))
-                .build());
-        if (!query.isEmpty()) {
-            result = query.get(0);
-        ***REMOVED***
-        return result;
     ***REMOVED***
 
     public String getAttachmentAction(String objectId) {
