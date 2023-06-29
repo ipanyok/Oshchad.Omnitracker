@@ -67,6 +67,18 @@ public class OmnitrackerJob {
         backBranch();
     ***REMOVED***
 
+    @Scheduled(cron = "0 0/10 * * * ?")
+    public void closeRequests() {
+        List<OimUserDto> requestsToClose = jdbcQueryService.getRebranchRequestObjectIdsToClose();
+        requestsToClose.forEach(oimUserDto -> {
+            if (!oimUserDto.getIsPickupSent()) {
+                omnitrackerApiService.callOmniTrackerPickupService(oimUserDto.getEmpNumber(), oimUserDto.getObjectId());
+            ***REMOVED***
+            omnitrackerApiService.callOmniTrackerClosureService(oimUserDto.getEmpNumber(), oimUserDto.getObjectId(), ResponseCodeEnum.SC_CC_CANCELLED, "Відхилено. Обробка звернення завершена за ініціативою Банка.", "");
+            jdbcQueryService.updateOmniRequestQuery(oimUserDto.getEmpNumber(), oimUserDto.getObjectId(), Collections.singletonMap("IS_PROCESSED", "1"));
+        ***REMOVED***);
+    ***REMOVED***
+
     private void rebranching() {
         List<OimUserDto> rebranchedUsers = jdbcQueryService.findUsersForRebranching();
         rebranchedUsers.forEach(oimUserDto -> {
