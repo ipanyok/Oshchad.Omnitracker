@@ -71,11 +71,15 @@ public class OmnitrackerJob {
     public void closeRequests() {
         List<OimUserDto> requestsToClose = jdbcQueryService.getRebranchRequestObjectIdsToClose();
         requestsToClose.forEach(oimUserDto -> {
-            if (!oimUserDto.getIsPickupSent()) {
-                omnitrackerApiService.callOmniTrackerPickupService(oimUserDto.getEmpNumber(), oimUserDto.getObjectId());
+            try {
+                if (!oimUserDto.getIsPickupSent()) {
+                    omnitrackerApiService.callOmniTrackerPickupService(oimUserDto.getEmpNumber(), oimUserDto.getObjectId());
+                ***REMOVED***
+                omnitrackerApiService.callOmniTrackerClosureService(oimUserDto.getEmpNumber(), oimUserDto.getObjectId(), ResponseCodeEnum.SC_CC_CANCELLED, "Відхилено. Обробка звернення завершена за ініціативою Банка.", "");
+                jdbcQueryService.updateOmniRequestQuery(oimUserDto.getEmpNumber(), oimUserDto.getObjectId(), Collections.singletonMap("IS_PROCESSED", "1"));
+            ***REMOVED*** catch (Exception e) {
+                log.error("Can't close " + oimUserDto.getObjectId() + " request", e);
             ***REMOVED***
-            omnitrackerApiService.callOmniTrackerClosureService(oimUserDto.getEmpNumber(), oimUserDto.getObjectId(), ResponseCodeEnum.SC_CC_CANCELLED, "Відхилено. Обробка звернення завершена за ініціативою Банка.", "");
-            jdbcQueryService.updateOmniRequestQuery(oimUserDto.getEmpNumber(), oimUserDto.getObjectId(), Collections.singletonMap("IS_PROCESSED", "1"));
         ***REMOVED***);
     ***REMOVED***
 
