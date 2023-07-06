@@ -191,11 +191,15 @@ public class OmnitrackerBlockJob {
     public void closeRequests() {
         List<OimUserDto> requestsToClose = jdbcQueryService.getBlockRequestObjectIdsToClose();
         requestsToClose.forEach(oimUserDto -> {
-            if (!oimUserDto.getIsPickupSent()) {
-                omnitrackerApiService.callOmniTrackerPickupService(null, oimUserDto.getObjectId());
+            try {
+                if (!oimUserDto.getIsPickupSent()) {
+                    omnitrackerApiService.callOmniTrackerPickupService(null, oimUserDto.getObjectId());
+                ***REMOVED***
+                omnitrackerApiService.callOmniTrackerClosureService(null, oimUserDto.getObjectId(), ResponseCodeEnum.SC_CC_CANCELLED, "Відхилено. Обробка звернення завершена за ініціативою Банка.", "");
+                jdbcQueryService.updateOmniBlockRequestQuery(oimUserDto.getObjectId(), Collections.singletonMap("IS_PROCESSED", "1"));
+            ***REMOVED*** catch (Exception e) {
+                log.error("Can't close " + oimUserDto.getObjectId() + " request", e);
             ***REMOVED***
-            omnitrackerApiService.callOmniTrackerClosureService(null, oimUserDto.getObjectId(), ResponseCodeEnum.SC_CC_CANCELLED, "Відхилено. Обробка звернення завершена за ініціативою Банка.", "");
-            jdbcQueryService.updateOmniBlockRequestQuery(oimUserDto.getObjectId(), Collections.singletonMap("IS_PROCESSED", "1"));
         ***REMOVED***);
     ***REMOVED***
 
