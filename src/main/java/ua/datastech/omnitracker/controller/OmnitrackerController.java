@@ -44,4 +44,10 @@ public class OmnitrackerController {
         return new ResponseEntity(HttpStatus.OK);
     ***REMOVED***
 
+    @PostMapping(value = "/api/call-cancel-req", produces = MediaType.TEXT_PLAIN_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity omnitrackerApiCancelRequest(@RequestBody String request) {
+        log.info("receive call-cancel-req()");
+        return new ResponseEntity(HttpStatus.OK);
+    ***REMOVED***
+
 ***REMOVED***
