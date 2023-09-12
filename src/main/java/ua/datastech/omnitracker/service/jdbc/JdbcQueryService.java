@@ -181,18 +181,18 @@ public class JdbcQueryService {
 
     private static final String CHECK_SOURCE_ID_QUERY = "SELECT ORG_UDF_HRPARENTORGCODE FROM ACT WHERE ORG_UDF_HRORGCODE = :sourceId";
 
-    private static final String OIM_GET_ALL_USERS_WITH_START_REBRANCHING_QUERY = "select usr.usr_key USR_KEY, usr.USR_UDF_OBJECTID USR_UDF_OBJECTID, usr.USR_UDF_TEMPBRANCH USR_UDF_TEMPBRANCH, usr.USR_EMP_NO USR_EMP_NO, OMNI_REQUEST.IS_CLOSURE_SENT IS_CLOSURE_SENT " +
-            "from usr, OMNI_REQUEST " +
-            "where usr.USR_EMP_NO = OMNI_REQUEST.EMP_NO " +
-            "and (USR_UDF_CURRENTBRANCH2 <> USR_UDF_TEMPBRANCH or (USR_UDF_CURRENTBRANCH2 is null and USR_UDF_TEMPBRANCH is not null)) " +
-            "and sysdate between USR_UDF_REBRANCHINGSTARTDATE and nvl(USR_UDF_REBRANCHINGENDDATE, '31.12.2099') " +
+    private static final String OIM_GET_ALL_USERS_WITH_START_REBRANCHING_QUERY = "select usr.usr_key USR_KEY, usr.USR_UDF_OBJECTID USR_UDF_OBJECTID, usr.USR_UDF_TEMPBRANCH USR_UDF_TEMPBRANCH, usr.USR_EMP_NO USR_EMP_NO, OMNI_REQUEST.IS_CLOSURE_SENT IS_CLOSURE_SENT ***REMOVED***n" +
+            "from usr, OMNI_REQUEST ***REMOVED***n" +
+            "where usr.USR_EMP_NO = OMNI_REQUEST.EMP_NO ***REMOVED***n" +
+            "and (USR_UDF_CURRENTBRANCH2 <> USR_UDF_TEMPBRANCH or (USR_UDF_CURRENTBRANCH2 is null and USR_UDF_TEMPBRANCH is not null))***REMOVED***n" +
+            "and sysdate between USR_UDF_REBRANCHINGSTARTDATE and nvl(USR_UDF_REBRANCHINGENDDATE,TO_DATE('31.12.2099', 'DD.MM.YYYY'))***REMOVED***n" +
             "and OMNI_REQUEST.IS_PROCESSED = 0 and OMNI_REQUEST.IS_SAVED = 1 AND OMNI_REQUEST.IS_NEED_TO_CLOSE = 0";
 
-    private static final String OIM_GET_ALL_USERS_WITH_END_REBRANCHING_QUERY = "select usr.usr_key USR_KEY, usr.USR_UDF_OBJECTID USR_UDF_OBJECTID, usr.USR_UDF_MAINBRANCH USR_UDF_MAINBRANCH, usr.USR_EMP_NO USR_EMP_NO, OMNI_REQUEST.IS_CLOSURE_SENT IS_CLOSURE_SENT " +
-            "from usr, OMNI_REQUEST " +
-            "where usr.USR_EMP_NO = OMNI_REQUEST.EMP_NO " +
-            "and (USR_UDF_CURRENTBRANCH2 <> USR_UDF_MAINBRANCH and USR_UDF_MAINBRANCH is not null or (USR_UDF_CURRENTBRANCH2 is null and USR_UDF_TEMPBRANCH is not null)) " +
-            "and sysdate >= nvl(USR_UDF_REBRANCHINGENDDATE, '31.12.2099') " +
+    private static final String OIM_GET_ALL_USERS_WITH_END_REBRANCHING_QUERY = "select usr.usr_key USR_KEY, usr.USR_UDF_OBJECTID USR_UDF_OBJECTID, usr.USR_UDF_MAINBRANCH USR_UDF_MAINBRANCH, usr.USR_EMP_NO USR_EMP_NO, OMNI_REQUEST.IS_CLOSURE_SENT IS_CLOSURE_SENT ***REMOVED***n" +
+            "from usr, OMNI_REQUEST***REMOVED***n" +
+            "where usr.USR_EMP_NO = OMNI_REQUEST.EMP_NO***REMOVED***n" +
+            "and (USR_UDF_CURRENTBRANCH2 <> USR_UDF_MAINBRANCH and USR_UDF_MAINBRANCH is not null or (USR_UDF_CURRENTBRANCH2 is null and USR_UDF_TEMPBRANCH is not null))***REMOVED***n" +
+            "and sysdate >= nvl(USR_UDF_REBRANCHINGENDDATE, TO_DATE('31.12.2099', 'DD.MM.YYYY'))***REMOVED***n" +
             "and OMNI_REQUEST.IS_PROCESSED = 1 and OMNI_REQUEST.IS_SAVED = 1 AND OMNI_REQUEST.IS_NEED_TO_CLOSE = 0";
 
     private static final String OIM_UPDATE_USR_QUERY = "update usr set usr_udf_currentbranch2=:branch where usr_key=:usrKey";
