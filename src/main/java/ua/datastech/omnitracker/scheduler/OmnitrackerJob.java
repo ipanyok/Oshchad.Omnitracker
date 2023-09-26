@@ -2,6 +2,7 @@ package ua.datastech.omnitracker.scheduler;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import ua.datastech.omnitracker.model.dto.OimUserDto;
@@ -22,6 +23,7 @@ public class OmnitrackerJob {
     private final OmnitrackerApiService omnitrackerApiService;
     private final JdbcQueryService jdbcQueryService;
 
+    @Async("CustomAsyncOmniExecutor")
     @Scheduled(cron = "0 0/10 * * * ?")
     public void saveOmniDataToOIM() {
         List<OimUserDto> omniData = jdbcQueryService.findAllUnprocessedRequests();
@@ -59,7 +61,7 @@ public class OmnitrackerJob {
         ***REMOVED***);
     ***REMOVED***
 
-    //    @Scheduled(cron = "@daily")
+    @Async("CustomAsyncOmniExecutor")
     @Scheduled(cron = "0 0/30 * * * ?")
     public void processRebranching() {
         closeRequestsWithCurrentBranchEqualsTempBranch();
@@ -67,6 +69,7 @@ public class OmnitrackerJob {
         backBranch();
     ***REMOVED***
 
+    @Async("CustomAsyncOmniExecutor")
     @Scheduled(cron = "0 0/10 * * * ?")
     public void closeRequests() {
         List<OimUserDto> requestsToClose = jdbcQueryService.getRebranchRequestObjectIdsToClose();

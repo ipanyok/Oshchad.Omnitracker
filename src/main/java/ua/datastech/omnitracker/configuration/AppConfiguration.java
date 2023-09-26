@@ -12,7 +12,6 @@ import ua.datastech.omnitracker.service.security.AppBasicAuthenticationEntryPoin
 import java.util.Collections;
 
 @Configuration
-@EnableScheduling
 public class AppConfiguration {
 
     @Bean
