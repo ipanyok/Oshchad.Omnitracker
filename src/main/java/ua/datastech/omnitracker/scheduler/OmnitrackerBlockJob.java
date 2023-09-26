@@ -2,6 +2,7 @@ package ua.datastech.omnitracker.scheduler;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import ua.datastech.omnitracker.model.dto.ActionType;
@@ -35,6 +36,7 @@ public class OmnitrackerBlockJob {
 
     // todo think about transactions and try/catch sections (when send closure)
 //    @Transactional
+    @Async("CustomAsyncOmniExecutor")
     @Scheduled(cron = "0 0/10 * * * ?")
     public void processData() {
         List<OimUserDto> omniData = jdbcQueryService.findAllUnprocessedBlockRequests();
@@ -109,6 +111,7 @@ public class OmnitrackerBlockJob {
         ***REMOVED***);
     ***REMOVED***
 
+    @Async("CustomAsyncOmniExecutor")
     @Scheduled(cron = "0 0/10 * * * ?")
     public void processAttachmentsData() {
         List<OimUserDto> omniData = jdbcQueryService.findAllUnprocessedAttachmentsRequests();
@@ -187,6 +190,7 @@ public class OmnitrackerBlockJob {
         ***REMOVED***);
     ***REMOVED***
 
+    @Async("CustomAsyncOmniExecutor")
     @Scheduled(cron = "0 0/10 * * * ?")
     public void closeRequests() {
         List<OimUserDto> requestsToClose = jdbcQueryService.getBlockRequestObjectIdsToClose();

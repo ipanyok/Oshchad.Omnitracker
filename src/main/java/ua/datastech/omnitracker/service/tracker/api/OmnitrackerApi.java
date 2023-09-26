@@ -1,5 +1,6 @@
 package ua.datastech.omnitracker.service.tracker.api;
 
+import com.ibm.icu.text.Transliterator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +21,9 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.Collections;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 @Service
@@ -42,6 +46,9 @@ public class OmnitrackerApi implements OmnitrackerApiService {
 
     @Value("${omnitracker_password***REMOVED***")
     private String omniPassword;
+
+    @Value("Cyrillic-Latin; Latin-ASCII")
+    private String transliterator;
 
     private final RestTemplate restTemplate;
 
@@ -100,12 +107,16 @@ public class OmnitrackerApi implements OmnitrackerApiService {
             log.error("Something went wrong. Status: " + response.getStatusCode());
             throw new RuntimeException("Error during send closure request to omnitracker: " + response.getBody());
         ***REMOVED***
+        Map<String, String> params = Stream.of(new String[][] {
+                { "IS_CLOSURE_SENT", "1" ***REMOVED***,
+                { "CLOSE_REASON", "'" + Transliterator.getInstance(transliterator).transliterate(solution) + "'"***REMOVED***,
+        ***REMOVED***).collect(Collectors.toMap(data -> data[0], data -> data[1]));
         if (empNumber != null) {
-            jdbcQueryService.updateOmniRequestQuery(empNumber, objectId, Collections.singletonMap("IS_CLOSURE_SENT", "1"));
+            jdbcQueryService.updateOmniRequestQuery(empNumber, objectId, params);
         ***REMOVED*** else {
-            jdbcQueryService.updateOmniBlockRequestQuery(objectId, Collections.singletonMap("IS_CLOSURE_SENT", "1"));
+            jdbcQueryService.updateOmniBlockRequestQuery(objectId, params);
         ***REMOVED***
-        log.info("Closure for " + objectId + " request was sent. ***REMOVED***n" + solution + " ***REMOVED***nStatus: " + response.getStatusCode());
+        log.info("Closure for " + objectId + " request was sent. Status: " + response.getStatusCode());
     ***REMOVED***
 
     private HttpHeaders createHeaders(String username, String password) {
