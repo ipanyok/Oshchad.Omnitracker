@@ -21,9 +21,9 @@ public interface OmniRequestProcessor {
             int minutes = 10 - parseTime.getMinute();
             while (minutes < 0) {
                 minutes = minutes + 10;
-            ***REMOVED***
+            }
             parseTime = parseTime.plusMinutes(minutes).withSecond(0);
-        ***REMOVED***
+        }
         SqlParameterSource namedParameters = new MapSqlParameterSource()
                 .addValue("objectId", request.getObjectID())
                 .addValue("action", request.getServiceTypeID())
@@ -33,6 +33,6 @@ public interface OmniRequestProcessor {
                 namedParameters,
                 PreparedStatement::executeUpdate
         );
-    ***REMOVED***
+    }
 
-***REMOVED***
+}

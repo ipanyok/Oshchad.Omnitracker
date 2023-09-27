@@ -25,8 +25,8 @@ public class AttachmentProcessor implements OmniRequestProcessor {
         Integer execute = saveOmniBlockRequest(request, jdbcTemplate);
         if (execute != 0) {
             log.info("Omni block request " + request.getObjectID() + " was saved.");
-        ***REMOVED***
-    ***REMOVED***
+        }
+    }
 
     @Override
     public Set<String> getActions() {
@@ -34,5 +34,5 @@ public class AttachmentProcessor implements OmniRequestProcessor {
         actionTypes.add(DISABLE_BY_FILE.name());
         actionTypes.add(ENABLE_BY_FILE.name());
         return actionTypes;
-    ***REMOVED***
-***REMOVED***
+    }
+}

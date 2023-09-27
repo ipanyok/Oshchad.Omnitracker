@@ -27,7 +27,7 @@ public class OmnitrackerController {
         return OmniTrackerResponse.builder()
                 .externalID(request.getObjectID())
                 .build();
-    ***REMOVED***
+    }
 
     @PostMapping(value = "/api/call-user-info", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public OmniTrackerResponse omnitrackerApiGetAttachmentsInfo(@RequestBody OmniTrackerAttachmentInfoRequest request) {
@@ -36,18 +36,18 @@ public class OmnitrackerController {
         return OmniTrackerResponse.builder()
                 .externalID(request.getObjectID())
                 .build();
-    ***REMOVED***
+    }
 
     @PostMapping(value = "/api/call-closure-ack", produces = MediaType.TEXT_PLAIN_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity omnitrackerApiClosureAck(@RequestBody String request) {
         log.info("receive call-closure-ack()");
         return new ResponseEntity(HttpStatus.OK);
-    ***REMOVED***
+    }
 
     @PostMapping(value = "/api/call-cancel-req", produces = MediaType.TEXT_PLAIN_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity omnitrackerApiCancelRequest(@RequestBody String request) {
         log.info("receive call-cancel-req()");
         return new ResponseEntity(HttpStatus.OK);
-    ***REMOVED***
+    }
 
-***REMOVED***
+}

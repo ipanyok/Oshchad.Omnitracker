@@ -8,4 +8,4 @@ public interface PowerShellExecutor {
 
     List<String> execute(String action, List<ProcessedUser> users);
 
-***REMOVED***
+}

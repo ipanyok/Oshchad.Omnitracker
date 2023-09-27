@@ -27,4 +27,4 @@ public class OimUserDto {
     private Long fileSize;
     private String attachment;
 
-***REMOVED***
+}

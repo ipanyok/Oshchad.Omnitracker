@@ -22,4 +22,4 @@ public class OimPickupRequest {
     private String responsible;
     private String responsibleInfo;
 
-***REMOVED***
+}

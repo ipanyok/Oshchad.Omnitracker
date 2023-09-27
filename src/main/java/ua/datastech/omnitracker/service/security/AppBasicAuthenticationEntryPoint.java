@@ -18,12 +18,12 @@ public class AppBasicAuthenticationEntryPoint extends BasicAuthenticationEntryPo
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         PrintWriter writer = response.getWriter();
         writer.println("HTTP Status 401 - " + authEx.getMessage());
-    ***REMOVED***
+    }
 
     @Override
     public void afterPropertiesSet() {
         setRealmName("myrealm");
         super.afterPropertiesSet();
-    ***REMOVED***
+    }
 
-***REMOVED***
+}

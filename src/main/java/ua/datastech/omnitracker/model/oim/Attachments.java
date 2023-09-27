@@ -14,4 +14,4 @@ public class Attachments {
     private String fileName;
     private Long fileSize;
 
-***REMOVED***
+}

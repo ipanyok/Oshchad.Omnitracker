@@ -19,7 +19,7 @@ public class ExcelFileReader {
 
     @SneakyThrows
     public static List<String> read(String attachment) {
-        String attachmentWithoutWrongData = attachment.replaceAll("***REMOVED***r***REMOVED***n", "");
+        String attachmentWithoutWrongData = attachment.replaceAll("\r\n", "");
         byte[] decode = Base64.getDecoder().decode(attachmentWithoutWrongData.getBytes(StandardCharsets.UTF_8));
         InputStream input = new ByteArrayInputStream(decode);
 
@@ -38,9 +38,9 @@ public class ExcelFileReader {
                     case NUMERIC:
                         if (DateUtil.isCellDateFormatted(cell)) {
                             data.get(i).add(cell.getDateCellValue() + "");
-                        ***REMOVED*** else {
+                        } else {
                             data.get(i).add(cell.getNumericCellValue() + "");
-                        ***REMOVED***
+                        }
                         break;
                     case BOOLEAN:
                         data.get(i).add(cell.getBooleanCellValue() + "");
@@ -50,10 +50,10 @@ public class ExcelFileReader {
                         break;
                     default:
                         data.get(new Integer(i)).add(" ");
-                ***REMOVED***
-            ***REMOVED***
+                }
+            }
             i++;
-        ***REMOVED***
+        }
 
         List<String> logins = new ArrayList<>();
 
@@ -64,14 +64,14 @@ public class ExcelFileReader {
                     cell = sheet.getRow(row).getCell(CELL_NUMBER);
                     if (cell != null && cell.getStringCellValue() != null && !cell.getStringCellValue().equals("")) {
                         logins.add(cell.getStringCellValue());
-                    ***REMOVED***
-                ***REMOVED***
-            ***REMOVED*** catch (Exception e) {
+                    }
+                }
+            } catch (Exception e) {
                 log.error(String.format("Can't parse row %s, cell %s: ", row, cell) + e.getMessage());
-            ***REMOVED***
-        ***REMOVED***
+            }
+        }
 
         return logins;
-    ***REMOVED***
+    }
 
-***REMOVED***
+}

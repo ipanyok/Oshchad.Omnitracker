@@ -10,4 +10,4 @@ import lombok.Data;
 @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
 public class OmniTrackerResponse {
     private String externalID;
-***REMOVED***
+}

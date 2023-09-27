@@ -16,4 +16,4 @@ public class OimClosureRequest {
     private String solution;
     private String solutionSpecification;
 
-***REMOVED***
+}

@@ -29,22 +29,22 @@ import java.util.stream.Stream;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-@Profile({"prod", "test"***REMOVED***)
+@Profile({"prod", "test"})
 public class OmnitrackerApi implements OmnitrackerApiService {
 
-    @Value("${omnitracker_closure_url***REMOVED***")
+    @Value("${omnitracker_closure_url}")
     private String omniClosureUrl;
 
-    @Value("${omnitracker_pickup_url***REMOVED***")
+    @Value("${omnitracker_pickup_url}")
     private String omniPickupUrl;
 
-    @Value("${omnitracker_attachment_url***REMOVED***")
+    @Value("${omnitracker_attachment_url}")
     private String omniGetAttachmentUrl;
 
-    @Value("${omnitracker_user***REMOVED***")
+    @Value("${omnitracker_user}")
     private String omniUser;
 
-    @Value("${omnitracker_password***REMOVED***")
+    @Value("${omnitracker_password}")
     private String omniPassword;
 
     @Value("Cyrillic-Latin; Latin-ASCII")
@@ -63,17 +63,17 @@ public class OmnitrackerApi implements OmnitrackerApiService {
         if (response.getStatusCode() != HttpStatus.OK) {
             log.error("Something went wrong. Status: " + response.getStatusCode());
             throw new RuntimeException("Error during send pickup request to omnitracker: " + response.getBody());
-        ***REMOVED***
+        }
 
         // todo refactor using request action
 
         if (empNumber != null) {
             jdbcQueryService.updateOmniRequestQuery(empNumber, objectId, Collections.singletonMap("IS_PICKUP_SENT", "1"));
-        ***REMOVED*** else {
+        } else {
             jdbcQueryService.updateOmniBlockRequestQuery(objectId, Collections.singletonMap("IS_PICKUP_SENT", "1"));
-        ***REMOVED***
+        }
         log.info("Pickup for " + objectId + " request was sent. Status: " + response.getStatusCode());
-    ***REMOVED***
+    }
 
     @Override
     public String callOmniTrackerGetAttachmentService(Long oid, String objectId) {
@@ -91,11 +91,11 @@ public class OmnitrackerApi implements OmnitrackerApiService {
         if (response.getStatusCode() != HttpStatus.OK) {
             log.error("Something went wrong. Status: " + response.getStatusCode());
             throw new RuntimeException("Error during send gey-attachment request to omnitracker: " + response.getBody());
-        ***REMOVED***
+        }
         log.info("Get-attachment for " + objectId + " request was sent. Status: " + response.getStatusCode());
         restTemplate.getMessageConverters().remove(0);
         return response.getBody();
-    ***REMOVED***
+    }
 
     @Override
     public void callOmniTrackerClosureService(String empNumber, String objectId, ResponseCodeEnum closureCode, String solution, String solutionSpecification) {
@@ -106,18 +106,18 @@ public class OmnitrackerApi implements OmnitrackerApiService {
         if (response.getStatusCode() != HttpStatus.OK) {
             log.error("Something went wrong. Status: " + response.getStatusCode());
             throw new RuntimeException("Error during send closure request to omnitracker: " + response.getBody());
-        ***REMOVED***
+        }
         Map<String, String> params = Stream.of(new String[][] {
-                { "IS_CLOSURE_SENT", "1" ***REMOVED***,
-                { "CLOSE_REASON", "'" + Transliterator.getInstance(transliterator).transliterate(solution) + "'"***REMOVED***,
-        ***REMOVED***).collect(Collectors.toMap(data -> data[0], data -> data[1]));
+                { "IS_CLOSURE_SENT", "1" },
+                { "CLOSE_REASON", "'" + Transliterator.getInstance(transliterator).transliterate(solution) + "'"},
+        }).collect(Collectors.toMap(data -> data[0], data -> data[1]));
         if (empNumber != null) {
             jdbcQueryService.updateOmniRequestQuery(empNumber, objectId, params);
-        ***REMOVED*** else {
+        } else {
             jdbcQueryService.updateOmniBlockRequestQuery(objectId, params);
-        ***REMOVED***
+        }
         log.info("Closure for " + objectId + " request was sent. Status: " + response.getStatusCode());
-    ***REMOVED***
+    }
 
     private HttpHeaders createHeaders(String username, String password) {
         return new HttpHeaders() {{
@@ -126,8 +126,8 @@ public class OmnitrackerApi implements OmnitrackerApiService {
             String authHeader = "Basic " + encodedAuth;
             set("Authorization", authHeader);
             setContentType(MediaType.APPLICATION_JSON);
-        ***REMOVED******REMOVED***;
-    ***REMOVED***
+        }};
+    }
 
     private OimClosureRequest setupOimClosureRequest(String externalID, String objectID, ResponseCodeEnum closureCode, String solution, String solutionSpecification) {
         return OimClosureRequest.builder()
@@ -137,7 +137,7 @@ public class OmnitrackerApi implements OmnitrackerApiService {
                 .solution(solution)
                 .solutionSpecification(solutionSpecification)
                 .build();
-    ***REMOVED***
+    }
 
     private OimPickupRequest setupOimPickupRequest(String externalID, String objectID) {
         return OimPickupRequest.builder()
@@ -147,6 +147,6 @@ public class OmnitrackerApi implements OmnitrackerApiService {
                 .responsible("panokiv@oschadbank.ua")
                 .responsibleInfo("panokiv@oschadbank.ua")
                 .build();
-    ***REMOVED***
+    }
 
-***REMOVED***
+}

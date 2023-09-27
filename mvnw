@@ -83,7 +83,7 @@ if [ -z "$M2_HOME" ] ; then
   # need this for relative symlinks
   while [ -h "$PRG" ] ; do
     ls=`ls -ld "$PRG"`
-    link=`expr "$ls" : '.*-> ***REMOVED***(.****REMOVED***)$'`
+    link=`expr "$ls" : '.*-> \(.*\)$'`
     if expr "$link" : '/.*' > /dev/null; then
       PRG="$link"
     else
@@ -122,18 +122,18 @@ fi
 
 if [ -z "$JAVA_HOME" ]; then
   javaExecutable="`which javac`"
-  if [ -n "$javaExecutable" ] && ! [ "`expr ***REMOVED***"$javaExecutable***REMOVED***" : '***REMOVED***([^ ]****REMOVED***)'`" = "no" ]; then
+  if [ -n "$javaExecutable" ] && ! [ "`expr \"$javaExecutable\" : '\([^ ]*\)'`" = "no" ]; then
     # readlink(1) is not available as standard on Solaris 10.
     readLink=`which readlink`
-    if [ ! `expr "$readLink" : '***REMOVED***([^ ]****REMOVED***)'` = "no" ]; then
+    if [ ! `expr "$readLink" : '\([^ ]*\)'` = "no" ]; then
       if $darwin ; then
-        javaHome="`dirname ***REMOVED***"$javaExecutable***REMOVED***"`"
-        javaExecutable="`cd ***REMOVED***"$javaHome***REMOVED***" && pwd -P`/javac"
+        javaHome="`dirname \"$javaExecutable\"`"
+        javaExecutable="`cd \"$javaHome\" && pwd -P`/javac"
       else
-        javaExecutable="`readlink -f ***REMOVED***"$javaExecutable***REMOVED***"`"
+        javaExecutable="`readlink -f \"$javaExecutable\"`"
       fi
-      javaHome="`dirname ***REMOVED***"$javaExecutable***REMOVED***"`"
-      javaHome=`expr "$javaHome" : '***REMOVED***(.****REMOVED***)/bin'`
+      javaHome="`dirname \"$javaExecutable\"`"
+      javaHome=`expr "$javaHome" : '\(.*\)/bin'`
       JAVA_HOME="$javaHome"
       export JAVA_HOME
     fi
@@ -149,7 +149,7 @@ if [ -z "$JAVACMD" ] ; then
       JAVACMD="$JAVA_HOME/bin/java"
     fi
   else
-    JAVACMD="`***REMOVED******REMOVED***unset -f command; ***REMOVED******REMOVED***command -v java`"
+    JAVACMD="`\\unset -f command; \\command -v java`"
   fi
 fi
 
@@ -183,20 +183,20 @@ find_maven_basedir() {
       break
     fi
     # workaround for JBEAP-8937 (on Solaris 10/Sparc)
-    if [ -d "${wdir***REMOVED***" ]; then
+    if [ -d "${wdir}" ]; then
       wdir=`cd "$wdir/.."; pwd`
     fi
     # end of workaround
   done
-  echo "${basedir***REMOVED***"
-***REMOVED***
+  echo "${basedir}"
+}
 
 # concatenates all lines of a file
 concat_lines() {
   if [ -f "$1" ]; then
-    echo "$(tr -s '***REMOVED***n' ' ' < "$1")"
+    echo "$(tr -s '\n' ' ' < "$1")"
   fi
-***REMOVED***
+}
 
 BASE_DIR=`find_maven_basedir "$(pwd)"`
 if [ -z "$BASE_DIR" ]; then
@@ -282,7 +282,7 @@ fi
 # End of extension
 ##########################################################################################
 
-export MAVEN_PROJECTBASEDIR=${MAVEN_BASEDIR:-"$BASE_DIR"***REMOVED***
+export MAVEN_PROJECTBASEDIR=${MAVEN_BASEDIR:-"$BASE_DIR"}
 if [ "$MVNW_VERBOSE" = true ]; then
   echo $MAVEN_PROJECTBASEDIR
 fi
@@ -307,10 +307,10 @@ export MAVEN_CMD_LINE_ARGS
 
 WRAPPER_LAUNCHER=org.apache.maven.wrapper.MavenWrapperMain
 
-exec "$JAVACMD" ***REMOVED***
-  $MAVEN_OPTS ***REMOVED***
-  $MAVEN_DEBUG_OPTS ***REMOVED***
-  -classpath "$MAVEN_PROJECTBASEDIR/.mvn/wrapper/maven-wrapper.jar" ***REMOVED***
-  "-Dmaven.home=${M2_HOME***REMOVED***" ***REMOVED***
-  "-Dmaven.multiModuleProjectDirectory=${MAVEN_PROJECTBASEDIR***REMOVED***" ***REMOVED***
-  ${WRAPPER_LAUNCHER***REMOVED*** $MAVEN_CONFIG "$@"
+exec "$JAVACMD" \
+  $MAVEN_OPTS \
+  $MAVEN_DEBUG_OPTS \
+  -classpath "$MAVEN_PROJECTBASEDIR/.mvn/wrapper/maven-wrapper.jar" \
+  "-Dmaven.home=${M2_HOME}" \
+  "-Dmaven.multiModuleProjectDirectory=${MAVEN_PROJECTBASEDIR}" \
+  ${WRAPPER_LAUNCHER} $MAVEN_CONFIG "$@"

@@ -24,7 +24,7 @@ public class SecurityConfiguration {
     public SecurityConfiguration(DataSource dataSource, BasicAuthenticationEntryPoint basicAuthenticationEntryPoint) {
         this.dataSource = dataSource;
         this.basicAuthenticationEntryPoint = basicAuthenticationEntryPoint;
-    ***REMOVED***
+    }
 
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
@@ -33,7 +33,7 @@ public class SecurityConfiguration {
                 .dataSource(dataSource)
                 .usersByUsernameQuery("select LOGIN, PASSWORD, STATUS from OMNI_USERS where LOGIN = ?")
                 .authoritiesByUsernameQuery("SELECT LOGIN, 'ROLE_USER' FROM OMNI_USERS WHERE LOGIN = ?");
-    ***REMOVED***
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -51,11 +51,11 @@ public class SecurityConfiguration {
                     .httpBasic()
                 .authenticationEntryPoint(basicAuthenticationEntryPoint);
         return http.build();
-    ***REMOVED***
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
-    ***REMOVED***
+    }
 
-***REMOVED***
+}

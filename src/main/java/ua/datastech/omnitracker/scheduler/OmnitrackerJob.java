@@ -32,11 +32,11 @@ public class OmnitrackerJob {
             try {
                 if (checkIfDateExpired(oimUserDto, currentDate)) {
                     return;
-                ***REMOVED***
+                }
 
                 if (!oimUserDto.getIsPickupSent()) {
                     omnitrackerApiService.callOmniTrackerPickupService(oimUserDto.getEmpNumber(), oimUserDto.getObjectId());
-                ***REMOVED***
+                }
 
                 List<Long> ids = jdbcQueryService.findOimUserByEmpNumber(oimUserDto.getEmpNumber());
 
@@ -47,19 +47,19 @@ public class OmnitrackerJob {
 
                     if (!oimUserDto.getIsClosureSent()) {
                         omnitrackerApiService.callOmniTrackerClosureService(oimUserDto.getEmpNumber(), oimUserDto.getObjectId(), ResponseCodeEnum.SC_CC_REJECTED, "Відхилено. Користувач [empNumber=" + oimUserDto.getEmpNumber() + "] не знайдений в системі ОІМ.", "");
-                    ***REMOVED***
-                ***REMOVED*** else {
+                    }
+                } else {
                     Integer updateCount = jdbcQueryService.updateOimUser(oimUserDto);
                     if (updateCount != 0) {
                         jdbcQueryService.updateOmniRequestQuery(oimUserDto.getEmpNumber(), oimUserDto.getObjectId(), Collections.singletonMap("IS_SAVED", "1"));
                         log.info("User[empNumber=" + oimUserDto.getEmpNumber() + "] data was saved in OIM");
-                    ***REMOVED***
-                ***REMOVED***
-            ***REMOVED*** catch (Exception e) {
+                    }
+                }
+            } catch (Exception e) {
                 log.error("Can't process " + oimUserDto.getObjectId() + " request", e);
-            ***REMOVED***
-        ***REMOVED***);
-    ***REMOVED***
+            }
+        });
+    }
 
     @Async("CustomAsyncOmniExecutor")
     @Scheduled(cron = "0 0/30 * * * ?")
@@ -67,7 +67,7 @@ public class OmnitrackerJob {
         closeRequestsWithCurrentBranchEqualsTempBranch();
         rebranching();
         backBranch();
-    ***REMOVED***
+    }
 
     @Async("CustomAsyncOmniExecutor")
     @Scheduled(cron = "0 0/10 * * * ?")
@@ -77,14 +77,14 @@ public class OmnitrackerJob {
             try {
                 if (!oimUserDto.getIsPickupSent()) {
                     omnitrackerApiService.callOmniTrackerPickupService(oimUserDto.getEmpNumber(), oimUserDto.getObjectId());
-                ***REMOVED***
+                }
                 omnitrackerApiService.callOmniTrackerClosureService(oimUserDto.getEmpNumber(), oimUserDto.getObjectId(), ResponseCodeEnum.SC_CC_CANCELLED, "Відхилено. Обробка звернення завершена за ініціативою Банка.", "");
                 jdbcQueryService.updateOmniRequestQuery(oimUserDto.getEmpNumber(), oimUserDto.getObjectId(), Collections.singletonMap("IS_PROCESSED", "1"));
-            ***REMOVED*** catch (Exception e) {
+            } catch (Exception e) {
                 log.error("Can't close " + oimUserDto.getObjectId() + " request", e);
-            ***REMOVED***
-        ***REMOVED***);
-    ***REMOVED***
+            }
+        });
+    }
 
     private void rebranching() {
         List<OimUserDto> rebranchedUsers = jdbcQueryService.findUsersForRebranching();
@@ -94,14 +94,14 @@ public class OmnitrackerJob {
                 try {
                     jdbcQueryService.updateOimUsrForRebranch(oimUserDto.getTmpBranch(), oimUserDto.getUsrKey());
                     omnitrackerApiService.callOmniTrackerClosureService(oimUserDto.getEmpNumber(), oimUserDto.getObjectId(), ResponseCodeEnum.SC_CC_RESOLVED, "Вирішено", "");
-                ***REMOVED*** catch (Exception e) {
+                } catch (Exception e) {
                     log.error("Can't modify user with key: " + oimUserDto.getEmpNumber(), e);
                     omnitrackerApiService.callOmniTrackerClosureService(oimUserDto.getEmpNumber(), oimUserDto.getObjectId(), ResponseCodeEnum.SC_CC_REJECTED, "Відхилено. Не можливо оновити користувача " + oimUserDto.getEmpNumber(), "");
-                ***REMOVED***
-            ***REMOVED***
+                }
+            }
             jdbcQueryService.updateOmniRequestQuery(oimUserDto.getEmpNumber(), oimUserDto.getObjectId(), Collections.singletonMap("IS_PROCESSED", "1"));
-        ***REMOVED***);
-    ***REMOVED***
+        });
+    }
 
     private void backBranch() {
         List<OimUserDto> rebranchedUsers = jdbcQueryService.findUsersForBackToMainBranch();
@@ -109,11 +109,11 @@ public class OmnitrackerJob {
             log.info("Actualize user with key: " + oimUserDto.getEmpNumber() + ". Current (main) branch is: " + oimUserDto.getMainBranch());
             try {
                 jdbcQueryService.updateOimUsrForRebranch(oimUserDto.getMainBranch(), oimUserDto.getUsrKey());
-            ***REMOVED*** catch (Exception e) {
+            } catch (Exception e) {
                 log.error("Can't modify user with key: " + oimUserDto.getEmpNumber(), e);
-            ***REMOVED***
-        ***REMOVED***);
-    ***REMOVED***
+            }
+        });
+    }
 
     private void closeRequestsWithCurrentBranchEqualsTempBranch() {
         List<OimUserDto> usersWithBranches = jdbcQueryService.getUsersBranches();
@@ -126,24 +126,24 @@ public class OmnitrackerJob {
                 try {
                     omnitrackerApiService.callOmniTrackerClosureService(oimUserDto.getEmpNumber(), oimUserDto.getObjectId(), ResponseCodeEnum.SC_CC_RESOLVED, "Вирішено. Користувач вже знаходиться в даному ТВБВ", "");
                     jdbcQueryService.updateOmniRequestQuery(oimUserDto.getEmpNumber(), oimUserDto.getObjectId(), Collections.singletonMap("IS_PROCESSED", "1"));
-                ***REMOVED*** catch (Exception e) {
+                } catch (Exception e) {
                     log.error("Can't sent closure for user with key: " + oimUserDto.getEmpNumber(), e);
-                ***REMOVED***
-            ***REMOVED***
-        ***REMOVED***);
-    ***REMOVED***
+                }
+            }
+        });
+    }
 
     private boolean checkIfDateExpired(OimUserDto oimUserDto, LocalDate currentDate) {
         boolean isExpired = false;
         if (LocalDate.parse(oimUserDto.getStartDate()).isBefore(currentDate) && !oimUserDto.getIsClosureSent()) {
             if (!oimUserDto.getIsPickupSent()) {
                 omnitrackerApiService.callOmniTrackerPickupService(oimUserDto.getEmpNumber(), oimUserDto.getObjectId());
-            ***REMOVED***
+            }
             omnitrackerApiService.callOmniTrackerClosureService(oimUserDto.getEmpNumber(), oimUserDto.getObjectId(), ResponseCodeEnum.SC_CC_REJECTED, "Відхилено. Дата старту менша поточної", "");
             jdbcQueryService.updateOmniRequestQuery(oimUserDto.getEmpNumber(), oimUserDto.getObjectId(), Collections.singletonMap("IS_PROCESSED", "1"));
             isExpired = true;
-        ***REMOVED***
+        }
         return isExpired;
-    ***REMOVED***
+    }
 
-***REMOVED***
+}
