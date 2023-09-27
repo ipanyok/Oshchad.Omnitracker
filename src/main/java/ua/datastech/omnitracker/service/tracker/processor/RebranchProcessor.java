@@ -27,7 +27,7 @@ public class RebranchProcessor implements OmniRequestProcessor {
         java.sql.Date endDate = null;
         if (request.getAdditionalInfo().getEndDate() != null && !request.getAdditionalInfo().getEndDate().equals("")) {
             endDate = java.sql.Date.valueOf(request.getAdditionalInfo().getEndDate().substring(0, request.getAdditionalInfo().getEndDate().indexOf("T")));
-        ***REMOVED***
+        }
         SqlParameterSource namedParameters = new MapSqlParameterSource()
                 .addValue("objectId", request.getObjectID())
                 .addValue("empNumber", request.getAdditionalInfo().getEmpNumber())
@@ -42,13 +42,13 @@ public class RebranchProcessor implements OmniRequestProcessor {
         );
         if (execute != 0) {
             log.info("Omni request " + request.getObjectID() + " was saved.");
-        ***REMOVED***
-    ***REMOVED***
+        }
+    }
 
     @Override
     public Set<String> getActions() {
         Set<String> actionTypes = new HashSet<>();
         actionTypes.add(RE_BRANCH.name());
         return actionTypes;
-    ***REMOVED***
-***REMOVED***
+    }
+}

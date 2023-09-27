@@ -35,11 +35,11 @@ public class EmployeeProcessor implements OmniRequestProcessor {
                     params,
                     PreparedStatement::executeUpdate
             );
-        ***REMOVED***);
+        });
         if (execute != 0) {
             log.info("Omni block request " + request.getObjectID() + " was saved.");
-        ***REMOVED***
-    ***REMOVED***
+        }
+    }
 
     @Override
     public Set<String> getActions() {
@@ -47,5 +47,5 @@ public class EmployeeProcessor implements OmniRequestProcessor {
         actionTypes.add(DISABLE_USER.name());
         actionTypes.add(ENABLE_USER.name());
         return actionTypes;
-    ***REMOVED***
-***REMOVED***
+    }
+}

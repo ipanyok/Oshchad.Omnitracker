@@ -10,4 +10,4 @@ public class Organizations {
 
     private String sourceID;
 
-***REMOVED***
+}

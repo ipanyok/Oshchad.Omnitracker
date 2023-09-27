@@ -19,21 +19,21 @@ import java.util.concurrent.ThreadPoolExecutor;
 @EnableAsync
 public class SchedulerConfiguration implements SchedulingConfigurer {
 
-    @Value("${scheduler.threads.pool.size***REMOVED***")
+    @Value("${scheduler.threads.pool.size}")
     private int threadsCount;
 
-    @Value("${scheduler.threads.pool.size.max***REMOVED***")
+    @Value("${scheduler.threads.pool.size.max}")
     private int threadsCountMax;
 
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
         taskRegistrar.setScheduler(taskExecutor());
-    ***REMOVED***
+    }
 
     @Bean(destroyMethod="shutdown")
     public Executor taskExecutor() {
         return Executors.newScheduledThreadPool(threadsCount);
-    ***REMOVED***
+    }
 
     @Bean("CustomAsyncOmniExecutor")
     public TaskExecutor threadPoolTaskExecutor() {
@@ -46,5 +46,5 @@ public class SchedulerConfiguration implements SchedulingConfigurer {
         executor.setWaitForTasksToCompleteOnShutdown(true);
         executor.initialize();
         return executor;
-    ***REMOVED***
-***REMOVED***
+    }
+}

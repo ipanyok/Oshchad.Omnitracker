@@ -8,7 +8,7 @@ public class OmnitrackerApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(OmnitrackerApplication.class, args);
-	***REMOVED***
+	}
 
-***REMOVED***
+}
 

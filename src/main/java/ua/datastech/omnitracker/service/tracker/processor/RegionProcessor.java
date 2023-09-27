@@ -36,11 +36,11 @@ public class RegionProcessor implements OmniRequestProcessor {
                     params,
                     PreparedStatement::executeUpdate
             );
-        ***REMOVED***);
+        });
         if (execute != 0) {
             log.info("Omni block request " + request.getObjectID() + " was saved.");
-        ***REMOVED***
-    ***REMOVED***
+        }
+    }
 
     @Override
     public Set<String> getActions() {
@@ -48,5 +48,5 @@ public class RegionProcessor implements OmniRequestProcessor {
         actionTypes.add(DISABLE_REGION.name());
         actionTypes.add(ENABLE_REGION.name());
         return actionTypes;
-    ***REMOVED***
-***REMOVED***
+    }
+}

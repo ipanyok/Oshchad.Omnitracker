@@ -9,4 +9,4 @@ public enum ResponseCodeEnum {
     SC_CC_REJECTED,
     SC_CC_CANCELLED
 
-***REMOVED***
+}

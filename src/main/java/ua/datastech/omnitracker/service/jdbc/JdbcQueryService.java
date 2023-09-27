@@ -81,118 +81,118 @@ public class JdbcQueryService {
 
     private final static String OIM_FIND_USERS_TO_CLEAN_QUERY = "select USR_KEY, USR_EMP_NO from usr where USR_UDF_REBRANCHINGENDDATE = :endDate";
 
-    private final static String OIM_FIND_USR_TO_BLOCK_BY_SOURCE_IF_EQUAL_QUERY = "SELECT distinct ad.ud_ADUSER_UID AD_LOGIN, 'UPDATE USR SET USR_STATUS = ''Disabled'' where usr_key = '''||usr.usr_key||'''' disable_usr***REMOVED***n" +
-            "FROM USR***REMOVED***n" +
-            "  JOIN ORC on orc.usr_key = usr.usr_key***REMOVED***n" +
-            "  join UD_ADUSER ad on ad.ORC_KEY = orc.orc_key***REMOVED***n" +
-            "  join oiu on oiu .orc_key = orc.orc_key***REMOVED***n" +
-            "  join ost on oiu.ost_key = ost.osT_key and OST_STATUS IN ('Disabled', 'Provisioned', 'Enabled')***REMOVED***n" +
-            "WHERE USR.USR_DISPLAY_NAME NOT IN (select LKV_DECODED from LKu ***REMOVED***n" +
-            "    join lkv on lku.lku_key = lkv.lku_key ***REMOVED***n" +
-            "    where LKU_TYPE_STRING_KEY = 'Lookup.Actualize.UserVacationExclusion') ***REMOVED***n" +
+    private final static String OIM_FIND_USR_TO_BLOCK_BY_SOURCE_IF_EQUAL_QUERY = "SELECT distinct ad.ud_ADUSER_UID AD_LOGIN, 'UPDATE USR SET USR_STATUS = ''Disabled'' where usr_key = '''||usr.usr_key||'''' disable_usr\n" +
+            "FROM USR\n" +
+            "  JOIN ORC on orc.usr_key = usr.usr_key\n" +
+            "  join UD_ADUSER ad on ad.ORC_KEY = orc.orc_key\n" +
+            "  join oiu on oiu .orc_key = orc.orc_key\n" +
+            "  join ost on oiu.ost_key = ost.osT_key and OST_STATUS IN ('Disabled', 'Provisioned', 'Enabled')\n" +
+            "WHERE USR.USR_DISPLAY_NAME NOT IN (select LKV_DECODED from LKu \n" +
+            "    join lkv on lku.lku_key = lkv.lku_key \n" +
+            "    where LKU_TYPE_STRING_KEY = 'Lookup.Actualize.UserVacationExclusion') \n" +
             "AND usr.usr_key IN (SELECT usr_key from usr where USR_UDF_OL_0_2 = (SELECT ORG_UDF_HRORGNAME FROM ACT where ORG_UDF_HRORGCODE = :sourceId))";
 
-    private final static String OIM_FIND_USR_TO_BLOCK_BY_SOURCE_IF_NOT_EQUAL_QUERY = "SELECT distinct ad.ud_ADUSER_UID AD_LOGIN, 'UPDATE USR SET USR_STATUS = ''Disabled'' where usr_key = '''||usr.usr_key||'''' disable_usr***REMOVED***n" +
-            "FROM USR***REMOVED***n" +
-            "  JOIN ORC on orc.usr_key = usr.usr_key***REMOVED***n" +
-            "  join UD_ADUSER ad on ad.ORC_KEY = orc.orc_key***REMOVED***n" +
-            "  join oiu on oiu .orc_key = orc.orc_key***REMOVED***n" +
-            "  join ost on oiu.ost_key = ost.osT_key and OST_STATUS IN ('Disabled', 'Provisioned', 'Enabled')***REMOVED***n" +
-            "WHERE USR.USR_DISPLAY_NAME NOT IN (select LKV_DECODED from LKu ***REMOVED***n" +
-            "    join lkv on lku.lku_key = lkv.lku_key ***REMOVED***n" +
-            "    where LKU_TYPE_STRING_KEY = 'Lookup.Actualize.UserVacationExclusion') ***REMOVED***n" +
-            "AND usr.usr_key IN (SELECT usr_key from usr where act_key IN (select act.act_key***REMOVED***n" +
-            "              from act***REMOVED***n" +
-            "          where (to_date(sysdate, 'dd.mm.yyyy') between to_date(ORG_UDF_FROMDATE, 'dd.mm.yyyy') ***REMOVED***n" +
-            "                and to_date(nvl(ORG_UDF_TODATE, sysdate + 1), 'dd.mm.yyyy'))***REMOVED***n" +
-            "          start with ORG_UDF_HRORGCODE = :sourceId ***REMOVED***n" +
+    private final static String OIM_FIND_USR_TO_BLOCK_BY_SOURCE_IF_NOT_EQUAL_QUERY = "SELECT distinct ad.ud_ADUSER_UID AD_LOGIN, 'UPDATE USR SET USR_STATUS = ''Disabled'' where usr_key = '''||usr.usr_key||'''' disable_usr\n" +
+            "FROM USR\n" +
+            "  JOIN ORC on orc.usr_key = usr.usr_key\n" +
+            "  join UD_ADUSER ad on ad.ORC_KEY = orc.orc_key\n" +
+            "  join oiu on oiu .orc_key = orc.orc_key\n" +
+            "  join ost on oiu.ost_key = ost.osT_key and OST_STATUS IN ('Disabled', 'Provisioned', 'Enabled')\n" +
+            "WHERE USR.USR_DISPLAY_NAME NOT IN (select LKV_DECODED from LKu \n" +
+            "    join lkv on lku.lku_key = lkv.lku_key \n" +
+            "    where LKU_TYPE_STRING_KEY = 'Lookup.Actualize.UserVacationExclusion') \n" +
+            "AND usr.usr_key IN (SELECT usr_key from usr where act_key IN (select act.act_key\n" +
+            "              from act\n" +
+            "          where (to_date(sysdate, 'dd.mm.yyyy') between to_date(ORG_UDF_FROMDATE, 'dd.mm.yyyy') \n" +
+            "                and to_date(nvl(ORG_UDF_TODATE, sysdate + 1), 'dd.mm.yyyy'))\n" +
+            "          start with ORG_UDF_HRORGCODE = :sourceId \n" +
             "          connect by prior ORG_UDF_HRORGCODE = ORG_UDF_HRPARENTORGCODE))";
 
-    private final static String OIM_FIND_USR_TO_ENABLE_BY_SOURCE_IF_EQUAL_QUERY = "SELECT distinct ad.ud_ADUSER_UID AD_LOGIN, 'UPDATE USR SET USR_STATUS = ''Active'' where usr_key = '''||usr.usr_key||'''' enabled_usr,***REMOVED***n" +
-            "'UPDATE USER_PROVISIONING_ATTRS SET POLICY_EVAL_IN_PROGRESS = 0, POLICY_EVAL_NEEDED = 1 where usr_key = '''||usr.usr_key||'''' upd_AP***REMOVED***n" +
-            "FROM USR***REMOVED***n" +
-            "  JOIN ORC on orc.usr_key = usr.usr_key***REMOVED***n" +
-            "  join UD_ADUSER ad on ad.ORC_KEY = orc.orc_key***REMOVED***n" +
-            "  join oiu on oiu .orc_key = orc.orc_key***REMOVED***n" +
-            "  join ost on oiu.ost_key = ost.osT_key and OST_STATUS IN ('Disabled', 'Provisioned', 'Enabled')***REMOVED***n" +
-            "WHERE (USR.USR_LOCKED <> '1' OR USR.USR_UDF_EXTENSIONATTRIBUTE15 is null)***REMOVED***n" +
-            "AND USR.USR_DISPLAY_NAME NOT IN (select LKV_DECODED from LKu ***REMOVED***n" +
-            "    join lkv on lku.lku_key = lkv.lku_key ***REMOVED***n" +
-            "    where LKU_TYPE_STRING_KEY = 'Lookup.Actualize.UserVacationExclusion')***REMOVED***n" +
-            "AND (to_date(sysdate, 'dd.mm.yyyy') between to_date(usr.USR_Start_date, 'dd.mm.yyyy') and to_date(nvl(usr.usr_end_date, sysdate + 1), 'dd.mm.yyyy'))***REMOVED***n" +
-            "AND (to_date(sysdate, 'dd.mm.yyyy') NOT between to_date(nvl(usr.USR_UDF_STARTDATEVACATION, sysdate -1), 'dd.mm.yyyy') and to_date(nvl(usr.USR_UDF_ENDDATEVACATION, sysdate + 1), 'dd.mm.yyyy') or USR_UDF_STARTDATEVACATION is null) ***REMOVED***n" +
+    private final static String OIM_FIND_USR_TO_ENABLE_BY_SOURCE_IF_EQUAL_QUERY = "SELECT distinct ad.ud_ADUSER_UID AD_LOGIN, 'UPDATE USR SET USR_STATUS = ''Active'' where usr_key = '''||usr.usr_key||'''' enabled_usr,\n" +
+            "'UPDATE USER_PROVISIONING_ATTRS SET POLICY_EVAL_IN_PROGRESS = 0, POLICY_EVAL_NEEDED = 1 where usr_key = '''||usr.usr_key||'''' upd_AP\n" +
+            "FROM USR\n" +
+            "  JOIN ORC on orc.usr_key = usr.usr_key\n" +
+            "  join UD_ADUSER ad on ad.ORC_KEY = orc.orc_key\n" +
+            "  join oiu on oiu .orc_key = orc.orc_key\n" +
+            "  join ost on oiu.ost_key = ost.osT_key and OST_STATUS IN ('Disabled', 'Provisioned', 'Enabled')\n" +
+            "WHERE (USR.USR_LOCKED <> '1' OR USR.USR_UDF_EXTENSIONATTRIBUTE15 is null)\n" +
+            "AND USR.USR_DISPLAY_NAME NOT IN (select LKV_DECODED from LKu \n" +
+            "    join lkv on lku.lku_key = lkv.lku_key \n" +
+            "    where LKU_TYPE_STRING_KEY = 'Lookup.Actualize.UserVacationExclusion')\n" +
+            "AND (to_date(sysdate, 'dd.mm.yyyy') between to_date(usr.USR_Start_date, 'dd.mm.yyyy') and to_date(nvl(usr.usr_end_date, sysdate + 1), 'dd.mm.yyyy'))\n" +
+            "AND (to_date(sysdate, 'dd.mm.yyyy') NOT between to_date(nvl(usr.USR_UDF_STARTDATEVACATION, sysdate -1), 'dd.mm.yyyy') and to_date(nvl(usr.USR_UDF_ENDDATEVACATION, sysdate + 1), 'dd.mm.yyyy') or USR_UDF_STARTDATEVACATION is null) \n" +
             "AND usr.usr_key IN (SELECT usr_key from usr where USR_UDF_OL_0_2 = (SELECT ORG_UDF_HRORGNAME FROM ACT where ORG_UDF_HRORGCODE = :sourceId))";
 
-    private final static String OIM_FIND_USR_TO_ENABLE_BY_SOURCE_IF_NOT_EQUAL_QUERY = "SELECT distinct ad.ud_ADUSER_UID AD_LOGIN, 'UPDATE USR SET USR_STATUS = ''Active'' where usr_key = '''||usr.usr_key||'''' enabled_usr,***REMOVED***n" +
-            "'UPDATE USER_PROVISIONING_ATTRS SET POLICY_EVAL_IN_PROGRESS = 0, POLICY_EVAL_NEEDED = 1 where usr_key = '''||usr.usr_key||'''' upd_AP***REMOVED***n" +
-            "FROM USR***REMOVED***n" +
-            "  JOIN ORC on orc.usr_key = usr.usr_key***REMOVED***n" +
-            "  join UD_ADUSER ad on ad.ORC_KEY = orc.orc_key***REMOVED***n" +
-            "  join oiu on oiu .orc_key = orc.orc_key***REMOVED***n" +
-            "  join ost on oiu.ost_key = ost.osT_key and OST_STATUS IN ('Disabled', 'Provisioned', 'Enabled')***REMOVED***n" +
-            "WHERE (USR.USR_LOCKED <> '1' OR USR.USR_UDF_EXTENSIONATTRIBUTE15 is null)***REMOVED***n" +
-            "AND USR.USR_DISPLAY_NAME NOT IN (select LKV_DECODED from LKu ***REMOVED***n" +
-            "    join lkv on lku.lku_key = lkv.lku_key ***REMOVED***n" +
-            "    where LKU_TYPE_STRING_KEY = 'Lookup.Actualize.UserVacationExclusion')***REMOVED***n" +
-            "AND (to_date(sysdate, 'dd.mm.yyyy') between to_date(usr.USR_Start_date, 'dd.mm.yyyy') and to_date(nvl(usr.usr_end_date, sysdate + 1), 'dd.mm.yyyy'))***REMOVED***n" +
-            "AND (to_date(sysdate, 'dd.mm.yyyy') NOT between to_date(nvl(usr.USR_UDF_STARTDATEVACATION, sysdate -1), 'dd.mm.yyyy') and to_date(nvl(usr.USR_UDF_ENDDATEVACATION, sysdate + 1), 'dd.mm.yyyy') or USR_UDF_STARTDATEVACATION is null) ***REMOVED***n" +
-            "AND usr.usr_key IN (SELECT usr_key from usr where act_key IN (select act.act_key***REMOVED***n" +
-            "              from act***REMOVED***n" +
-            "          where (to_date(sysdate, 'dd.mm.yyyy') between to_date(ORG_UDF_FROMDATE, 'dd.mm.yyyy') ***REMOVED***n" +
-            "                and to_date(nvl(ORG_UDF_TODATE, sysdate + 1), 'dd.mm.yyyy'))***REMOVED***n" +
-            "          start with ORG_UDF_HRORGCODE = :sourceId ***REMOVED***n" +
+    private final static String OIM_FIND_USR_TO_ENABLE_BY_SOURCE_IF_NOT_EQUAL_QUERY = "SELECT distinct ad.ud_ADUSER_UID AD_LOGIN, 'UPDATE USR SET USR_STATUS = ''Active'' where usr_key = '''||usr.usr_key||'''' enabled_usr,\n" +
+            "'UPDATE USER_PROVISIONING_ATTRS SET POLICY_EVAL_IN_PROGRESS = 0, POLICY_EVAL_NEEDED = 1 where usr_key = '''||usr.usr_key||'''' upd_AP\n" +
+            "FROM USR\n" +
+            "  JOIN ORC on orc.usr_key = usr.usr_key\n" +
+            "  join UD_ADUSER ad on ad.ORC_KEY = orc.orc_key\n" +
+            "  join oiu on oiu .orc_key = orc.orc_key\n" +
+            "  join ost on oiu.ost_key = ost.osT_key and OST_STATUS IN ('Disabled', 'Provisioned', 'Enabled')\n" +
+            "WHERE (USR.USR_LOCKED <> '1' OR USR.USR_UDF_EXTENSIONATTRIBUTE15 is null)\n" +
+            "AND USR.USR_DISPLAY_NAME NOT IN (select LKV_DECODED from LKu \n" +
+            "    join lkv on lku.lku_key = lkv.lku_key \n" +
+            "    where LKU_TYPE_STRING_KEY = 'Lookup.Actualize.UserVacationExclusion')\n" +
+            "AND (to_date(sysdate, 'dd.mm.yyyy') between to_date(usr.USR_Start_date, 'dd.mm.yyyy') and to_date(nvl(usr.usr_end_date, sysdate + 1), 'dd.mm.yyyy'))\n" +
+            "AND (to_date(sysdate, 'dd.mm.yyyy') NOT between to_date(nvl(usr.USR_UDF_STARTDATEVACATION, sysdate -1), 'dd.mm.yyyy') and to_date(nvl(usr.USR_UDF_ENDDATEVACATION, sysdate + 1), 'dd.mm.yyyy') or USR_UDF_STARTDATEVACATION is null) \n" +
+            "AND usr.usr_key IN (SELECT usr_key from usr where act_key IN (select act.act_key\n" +
+            "              from act\n" +
+            "          where (to_date(sysdate, 'dd.mm.yyyy') between to_date(ORG_UDF_FROMDATE, 'dd.mm.yyyy') \n" +
+            "                and to_date(nvl(ORG_UDF_TODATE, sysdate + 1), 'dd.mm.yyyy'))\n" +
+            "          start with ORG_UDF_HRORGCODE = :sourceId \n" +
             "          connect by prior ORG_UDF_HRORGCODE = ORG_UDF_HRPARENTORGCODE))";
 
-    private final static String OIM_FIND_USR_TO_BLOCK_BY_EMP_QUERY = "SELECT distinct ad.ud_ADUSER_UID AD_LOGIN, 'UPDATE USR SET USR_STATUS = ''Disabled'' where usr_key = '''||usr.usr_key||'''' disable_usr***REMOVED***n" +
-            "FROM USR***REMOVED***n" +
-            "  JOIN ORC on orc.usr_key = usr.usr_key***REMOVED***n" +
-            "  join UD_ADUSER ad on ad.ORC_KEY = orc.orc_key***REMOVED***n" +
-            "  join oiu on oiu .orc_key = orc.orc_key***REMOVED***n" +
-            "  join ost on oiu.ost_key = ost.osT_key and OST_STATUS IN ('Disabled', 'Provisioned', 'Enabled')***REMOVED***n" +
-            "WHERE  USR.USR_DISPLAY_NAME NOT IN (select LKV_DECODED from LKu ***REMOVED***n" +
-            "    join lkv on lku.lku_key = lkv.lku_key ***REMOVED***n" +
-            "    where LKU_TYPE_STRING_KEY = 'Lookup.Actualize.UserVacationExclusion')***REMOVED***n" +
+    private final static String OIM_FIND_USR_TO_BLOCK_BY_EMP_QUERY = "SELECT distinct ad.ud_ADUSER_UID AD_LOGIN, 'UPDATE USR SET USR_STATUS = ''Disabled'' where usr_key = '''||usr.usr_key||'''' disable_usr\n" +
+            "FROM USR\n" +
+            "  JOIN ORC on orc.usr_key = usr.usr_key\n" +
+            "  join UD_ADUSER ad on ad.ORC_KEY = orc.orc_key\n" +
+            "  join oiu on oiu .orc_key = orc.orc_key\n" +
+            "  join ost on oiu.ost_key = ost.osT_key and OST_STATUS IN ('Disabled', 'Provisioned', 'Enabled')\n" +
+            "WHERE  USR.USR_DISPLAY_NAME NOT IN (select LKV_DECODED from LKu \n" +
+            "    join lkv on lku.lku_key = lkv.lku_key \n" +
+            "    where LKU_TYPE_STRING_KEY = 'Lookup.Actualize.UserVacationExclusion')\n" +
             "AND USR.USR_EMP_NO IN (:empNumbers)";
 
-    private final static String OIM_FIND_USR_TO_ENABLE_BY_EMP_QUERY = "SELECT distinct ad.ud_ADUSER_UID AD_LOGIN, 'UPDATE USR SET USR_STATUS = ''Active'' where usr_key = '''||usr.usr_key||'''' enabled_usr,***REMOVED***n" +
-            "'UPDATE USER_PROVISIONING_ATTRS SET POLICY_EVAL_IN_PROGRESS = 0, POLICY_EVAL_NEEDED = 1 where usr_key = '''||usr.usr_key||'''' upd_AP***REMOVED***n" +
-            "FROM USR***REMOVED***n" +
-            "  JOIN ORC on orc.usr_key = usr.usr_key***REMOVED***n" +
-            "  join UD_ADUSER ad on ad.ORC_KEY = orc.orc_key***REMOVED***n" +
-            "  join oiu on oiu .orc_key = orc.orc_key***REMOVED***n" +
-            "  join ost on oiu.ost_key = ost.osT_key and OST_STATUS IN ('Disabled', 'Provisioned', 'Enabled')***REMOVED***n" +
-            "WHERE (USR.USR_LOCKED <> '1' OR USR.USR_UDF_EXTENSIONATTRIBUTE15 is null)***REMOVED***n" +
-            "AND USR.USR_DISPLAY_NAME NOT IN (select LKV_DECODED from LKu ***REMOVED***n" +
-            "    join lkv on lku.lku_key = lkv.lku_key ***REMOVED***n" +
-            "    where LKU_TYPE_STRING_KEY = 'Lookup.Actualize.UserVacationExclusion')***REMOVED***n" +
-            "AND (to_date(sysdate, 'dd.mm.yyyy') between to_date(usr.USR_Start_date, 'dd.mm.yyyy') and to_date(nvl(usr.usr_end_date, sysdate + 1), 'dd.mm.yyyy'))***REMOVED***n" +
-            "AND (to_date(sysdate, 'dd.mm.yyyy') NOT between to_date(nvl(usr.USR_UDF_STARTDATEVACATION, sysdate -1), 'dd.mm.yyyy') and to_date(nvl(usr.USR_UDF_ENDDATEVACATION, sysdate + 1), 'dd.mm.yyyy') or USR_UDF_STARTDATEVACATION is null)***REMOVED***n" +
+    private final static String OIM_FIND_USR_TO_ENABLE_BY_EMP_QUERY = "SELECT distinct ad.ud_ADUSER_UID AD_LOGIN, 'UPDATE USR SET USR_STATUS = ''Active'' where usr_key = '''||usr.usr_key||'''' enabled_usr,\n" +
+            "'UPDATE USER_PROVISIONING_ATTRS SET POLICY_EVAL_IN_PROGRESS = 0, POLICY_EVAL_NEEDED = 1 where usr_key = '''||usr.usr_key||'''' upd_AP\n" +
+            "FROM USR\n" +
+            "  JOIN ORC on orc.usr_key = usr.usr_key\n" +
+            "  join UD_ADUSER ad on ad.ORC_KEY = orc.orc_key\n" +
+            "  join oiu on oiu .orc_key = orc.orc_key\n" +
+            "  join ost on oiu.ost_key = ost.osT_key and OST_STATUS IN ('Disabled', 'Provisioned', 'Enabled')\n" +
+            "WHERE (USR.USR_LOCKED <> '1' OR USR.USR_UDF_EXTENSIONATTRIBUTE15 is null)\n" +
+            "AND USR.USR_DISPLAY_NAME NOT IN (select LKV_DECODED from LKu \n" +
+            "    join lkv on lku.lku_key = lkv.lku_key \n" +
+            "    where LKU_TYPE_STRING_KEY = 'Lookup.Actualize.UserVacationExclusion')\n" +
+            "AND (to_date(sysdate, 'dd.mm.yyyy') between to_date(usr.USR_Start_date, 'dd.mm.yyyy') and to_date(nvl(usr.usr_end_date, sysdate + 1), 'dd.mm.yyyy'))\n" +
+            "AND (to_date(sysdate, 'dd.mm.yyyy') NOT between to_date(nvl(usr.USR_UDF_STARTDATEVACATION, sysdate -1), 'dd.mm.yyyy') and to_date(nvl(usr.USR_UDF_ENDDATEVACATION, sysdate + 1), 'dd.mm.yyyy') or USR_UDF_STARTDATEVACATION is null)\n" +
             "AND USR.USR_EMP_NO IN (:empNumbers)";
 
-    private static final String BY_FILE_OIM_USER_QUERY = "SELECT distinct UPPER(ad.ud_ADUSER_UID) AD_LOGIN, 'UPDATE USR SET USR_STATUS = ''Active'' where usr_key = '''||usr.usr_key||'''' enabled_usr,***REMOVED***n" +
-            "'UPDATE USR SET USR_STATUS = ''Disabled'' where usr_key = '''||usr.usr_key||'''' disable_usr,***REMOVED***n" +
-            "'UPDATE USER_PROVISIONING_ATTRS SET POLICY_EVAL_IN_PROGRESS = 0, POLICY_EVAL_NEEDED = 1 where usr_key = '''||usr.usr_key||'''' upd_AP***REMOVED***n" +
-            "FROM USR***REMOVED***n" +
-            "  JOIN ORC on orc.usr_key = usr.usr_key***REMOVED***n" +
-            "  join UD_ADUSER ad on ad.ORC_KEY = orc.orc_key***REMOVED***n" +
-            "  join oiu on oiu .orc_key = orc.orc_key***REMOVED***n" +
-            "  join ost on oiu.ost_key = ost.osT_key and OST_STATUS IN ('Disabled', 'Provisioned', 'Enabled')***REMOVED***n" +
+    private static final String BY_FILE_OIM_USER_QUERY = "SELECT distinct UPPER(ad.ud_ADUSER_UID) AD_LOGIN, 'UPDATE USR SET USR_STATUS = ''Active'' where usr_key = '''||usr.usr_key||'''' enabled_usr,\n" +
+            "'UPDATE USR SET USR_STATUS = ''Disabled'' where usr_key = '''||usr.usr_key||'''' disable_usr,\n" +
+            "'UPDATE USER_PROVISIONING_ATTRS SET POLICY_EVAL_IN_PROGRESS = 0, POLICY_EVAL_NEEDED = 1 where usr_key = '''||usr.usr_key||'''' upd_AP\n" +
+            "FROM USR\n" +
+            "  JOIN ORC on orc.usr_key = usr.usr_key\n" +
+            "  join UD_ADUSER ad on ad.ORC_KEY = orc.orc_key\n" +
+            "  join oiu on oiu .orc_key = orc.orc_key\n" +
+            "  join ost on oiu.ost_key = ost.osT_key and OST_STATUS IN ('Disabled', 'Provisioned', 'Enabled')\n" +
             "WHERE UPPER(ad.ud_ADUSER_UID) IN (:adLogins)";
 
     private static final String CHECK_SOURCE_ID_QUERY = "SELECT ORG_UDF_HRPARENTORGCODE FROM ACT WHERE ORG_UDF_HRORGCODE = :sourceId";
 
-    private static final String OIM_GET_ALL_USERS_WITH_START_REBRANCHING_QUERY = "select usr.usr_key USR_KEY, usr.USR_UDF_OBJECTID USR_UDF_OBJECTID, usr.USR_UDF_TEMPBRANCH USR_UDF_TEMPBRANCH, usr.USR_EMP_NO USR_EMP_NO, OMNI_REQUEST.IS_CLOSURE_SENT IS_CLOSURE_SENT ***REMOVED***n" +
-            "from usr, OMNI_REQUEST ***REMOVED***n" +
-            "where usr.USR_EMP_NO = OMNI_REQUEST.EMP_NO ***REMOVED***n" +
-            "and (USR_UDF_CURRENTBRANCH2 <> USR_UDF_TEMPBRANCH or (USR_UDF_CURRENTBRANCH2 is null and USR_UDF_TEMPBRANCH is not null))***REMOVED***n" +
-            "and sysdate between USR_UDF_REBRANCHINGSTARTDATE and nvl(USR_UDF_REBRANCHINGENDDATE,TO_DATE('31.12.2099', 'DD.MM.YYYY'))***REMOVED***n" +
+    private static final String OIM_GET_ALL_USERS_WITH_START_REBRANCHING_QUERY = "select usr.usr_key USR_KEY, usr.USR_UDF_OBJECTID USR_UDF_OBJECTID, usr.USR_UDF_TEMPBRANCH USR_UDF_TEMPBRANCH, usr.USR_EMP_NO USR_EMP_NO, OMNI_REQUEST.IS_CLOSURE_SENT IS_CLOSURE_SENT \n" +
+            "from usr, OMNI_REQUEST \n" +
+            "where usr.USR_EMP_NO = OMNI_REQUEST.EMP_NO \n" +
+            "and (USR_UDF_CURRENTBRANCH2 <> USR_UDF_TEMPBRANCH or (USR_UDF_CURRENTBRANCH2 is null and USR_UDF_TEMPBRANCH is not null))\n" +
+            "and sysdate between USR_UDF_REBRANCHINGSTARTDATE and nvl(USR_UDF_REBRANCHINGENDDATE,TO_DATE('31.12.2099', 'DD.MM.YYYY'))\n" +
             "and OMNI_REQUEST.IS_PROCESSED = 0 and OMNI_REQUEST.IS_SAVED = 1 AND OMNI_REQUEST.IS_NEED_TO_CLOSE = 0";
 
-    private static final String OIM_GET_ALL_USERS_WITH_END_REBRANCHING_QUERY = "select usr.usr_key USR_KEY, usr.USR_UDF_OBJECTID USR_UDF_OBJECTID, usr.USR_UDF_MAINBRANCH USR_UDF_MAINBRANCH, usr.USR_EMP_NO USR_EMP_NO, OMNI_REQUEST.IS_CLOSURE_SENT IS_CLOSURE_SENT ***REMOVED***n" +
-            "from usr, OMNI_REQUEST***REMOVED***n" +
-            "where usr.USR_EMP_NO = OMNI_REQUEST.EMP_NO***REMOVED***n" +
-            "and (USR_UDF_CURRENTBRANCH2 <> USR_UDF_MAINBRANCH and USR_UDF_MAINBRANCH is not null or (USR_UDF_CURRENTBRANCH2 is null and USR_UDF_TEMPBRANCH is not null))***REMOVED***n" +
-            "and sysdate >= nvl(USR_UDF_REBRANCHINGENDDATE, TO_DATE('31.12.2099', 'DD.MM.YYYY'))***REMOVED***n" +
+    private static final String OIM_GET_ALL_USERS_WITH_END_REBRANCHING_QUERY = "select usr.usr_key USR_KEY, usr.USR_UDF_OBJECTID USR_UDF_OBJECTID, usr.USR_UDF_MAINBRANCH USR_UDF_MAINBRANCH, usr.USR_EMP_NO USR_EMP_NO, OMNI_REQUEST.IS_CLOSURE_SENT IS_CLOSURE_SENT \n" +
+            "from usr, OMNI_REQUEST\n" +
+            "where usr.USR_EMP_NO = OMNI_REQUEST.EMP_NO\n" +
+            "and (USR_UDF_CURRENTBRANCH2 <> USR_UDF_MAINBRANCH and USR_UDF_MAINBRANCH is not null or (USR_UDF_CURRENTBRANCH2 is null and USR_UDF_TEMPBRANCH is not null))\n" +
+            "and sysdate >= nvl(USR_UDF_REBRANCHINGENDDATE, TO_DATE('31.12.2099', 'DD.MM.YYYY'))\n" +
             "and OMNI_REQUEST.IS_PROCESSED = 1 and OMNI_REQUEST.IS_SAVED = 1 AND OMNI_REQUEST.IS_NEED_TO_CLOSE = 0";
 
     private static final String OIM_UPDATE_USR_QUERY = "update usr set usr_udf_currentbranch2=:branch where usr_key=:usrKey";
@@ -218,7 +218,7 @@ public class JdbcQueryService {
                         .objectId(rs.getString("OBJECT_ID"))
                         .isPickupSent(rs.getBoolean("IS_PICKUP_SENT"))
                         .build());
-    ***REMOVED***
+    }
 
     public List<OimUserDto> getRebranchRequestObjectIdsToClose() {
         return jdbcTemplate.query(OMNI_GET_ALL_REBRANCH_TO_CLOSE_QUERY, (rs, rowNum) ->
@@ -227,19 +227,19 @@ public class JdbcQueryService {
                         .empNumber(rs.getString("EMP_NO"))
                         .isPickupSent(rs.getBoolean("IS_PICKUP_SENT"))
                         .build());
-    ***REMOVED***
+    }
 
     public void updateBlockRequest(String objectId) {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("objectId", objectId);
         jdbcTemplate.execute(OIM_UPDATE_BLOCK_QUERY, params, PreparedStatement::executeUpdate);
-    ***REMOVED***
+    }
 
     public void updateRebranchRequest(String objectId) {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("objectId", objectId);
         jdbcTemplate.execute(OIM_UPDATE_REBRANCH_QUERY, params, PreparedStatement::executeUpdate);
-    ***REMOVED***
+    }
 
     public List<OimUserDto> getUsersBranches() {
         return jdbcTemplate.query(OMNI_CHECK_CURRENT_BRANCH_QUERY, (rs, rowNum) -> OimUserDto.builder()
@@ -249,7 +249,7 @@ public class JdbcQueryService {
                 .empNumber(rs.getString("EMP_NO"))
                 .isClosureSent(rs.getBoolean("IS_CLOSURE_SENT"))
                 .build());
-    ***REMOVED***
+    }
 
     public String getAttachmentAction(String objectId) {
         String result = null;
@@ -258,16 +258,16 @@ public class JdbcQueryService {
         List<String> query = jdbcTemplate.query(OMNI_CHECK_ATTACHMENT_QUERY, params, (rs, rowNum) -> rs.getString(1));
         if (!query.isEmpty()) {
             result = query.get(0);
-        ***REMOVED***
+        }
         return result;
-    ***REMOVED***
+    }
 
     public void updateOimUsrForRebranch(String branch, Long usrKey) {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("branch", branch)
                 .addValue("usrKey", usrKey);
         jdbcTemplate.execute(OIM_UPDATE_USR_QUERY, params, PreparedStatement::executeUpdate);
-    ***REMOVED***
+    }
 
     public List<OimUserDto> findUsersForRebranching() {
         return jdbcTemplate.query(OIM_GET_ALL_USERS_WITH_START_REBRANCHING_QUERY, (rs, rowNum) -> OimUserDto.builder()
@@ -277,7 +277,7 @@ public class JdbcQueryService {
                 .empNumber(rs.getString("USR_EMP_NO"))
                 .isClosureSent(rs.getBoolean("IS_CLOSURE_SENT"))
                 .build());
-    ***REMOVED***
+    }
 
     public List<OimUserDto> findUsersForBackToMainBranch() {
         return jdbcTemplate.query(OIM_GET_ALL_USERS_WITH_END_REBRANCHING_QUERY, (rs, rowNum) -> OimUserDto.builder()
@@ -287,7 +287,7 @@ public class JdbcQueryService {
                 .empNumber(rs.getString("USR_EMP_NO"))
                 .isClosureSent(rs.getBoolean("IS_CLOSURE_SENT"))
                 .build());
-    ***REMOVED***
+    }
 
     public List<ProcessedUser> findUsersToEnableByAdLogin(List<String> adLogins) {
         List<String> upperCaseLogins = adLogins.stream()
@@ -300,7 +300,7 @@ public class JdbcQueryService {
                 .processOimUserScript(rs.getString("enabled_usr"))
                 .provisioningScript(rs.getString("upd_AP"))
                 .build());
-    ***REMOVED***
+    }
 
     public List<ProcessedUser> findUsersToDisableByAdLogin(List<String> adLogins) {
         List<String> upperCaseLogins = adLogins.stream()
@@ -312,25 +312,25 @@ public class JdbcQueryService {
                 .adLogin(rs.getString("AD_LOGIN"))
                 .processOimUserScript(rs.getString("disable_usr"))
                 .build());
-    ***REMOVED***
+    }
 
 
     public void processOimUser(String query) {
         jdbcTemplate.execute(query, PreparedStatement::executeUpdate);
-    ***REMOVED***
+    }
 
     public void updateOmniRequestQuery(String empNumber, String objectId, Map<String, String> valuesToUpdate) {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("empNumber", empNumber)
                 .addValue("objectId", objectId);
         jdbcTemplate.execute(String.format(OMNI_UPDATE_QUERY, convertParamsMapToQueryData(valuesToUpdate)), params, PreparedStatement::executeUpdate);
-    ***REMOVED***
+    }
 
     public void updateOmniBlockRequestQuery(String objectId, Map<String, String> valuesToUpdate) {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("objectId", objectId);
         jdbcTemplate.execute(String.format(OMNI_UPDATE_BLOCK_QUERY, convertParamsMapToQueryData(valuesToUpdate)), params, PreparedStatement::executeUpdate);
-    ***REMOVED***
+    }
 
     public List<ProcessedUser> findUsersToBlockByEmployeeNumber(List<String> empNumbers) {
         SqlParameterSource params = new MapSqlParameterSource()
@@ -339,7 +339,7 @@ public class JdbcQueryService {
                 .adLogin(rs.getString("AD_LOGIN"))
                 .processOimUserScript(rs.getString("disable_usr"))
                 .build());
-    ***REMOVED***
+    }
 
     public List<ProcessedUser> findUsersToEnableByEmployeeNumber(List<String> empNumbers) {
         SqlParameterSource params = new MapSqlParameterSource()
@@ -349,7 +349,7 @@ public class JdbcQueryService {
                 .processOimUserScript(rs.getString("enabled_usr"))
                 .provisioningScript(rs.getString("upd_AP"))
                 .build());
-    ***REMOVED***
+    }
 
     public List<ProcessedUser> findUsersToBlockBySourceIdIfEqual(String sourceId) {
         SqlParameterSource params = new MapSqlParameterSource()
@@ -358,7 +358,7 @@ public class JdbcQueryService {
                 .adLogin(rs.getString("AD_LOGIN"))
                 .processOimUserScript(rs.getString("disable_usr"))
                 .build());
-    ***REMOVED***
+    }
 
     public List<ProcessedUser> findUsersToBlockBySourceIdIfNotEqual(String sourceId) {
         SqlParameterSource params = new MapSqlParameterSource()
@@ -367,7 +367,7 @@ public class JdbcQueryService {
                 .adLogin(rs.getString("AD_LOGIN"))
                 .processOimUserScript(rs.getString("disable_usr"))
                 .build());
-    ***REMOVED***
+    }
 
     public List<ProcessedUser> findUsersToEnableBySourceIdIfEqual(String sourceId) {
         SqlParameterSource params = new MapSqlParameterSource()
@@ -377,7 +377,7 @@ public class JdbcQueryService {
                 .processOimUserScript(rs.getString("enabled_usr"))
                 .provisioningScript(rs.getString("upd_AP"))
                 .build());
-    ***REMOVED***
+    }
 
     public List<ProcessedUser> findUsersToEnableBySourceIdIfNotEqual(String sourceId) {
         SqlParameterSource params = new MapSqlParameterSource()
@@ -387,7 +387,7 @@ public class JdbcQueryService {
                 .processOimUserScript(rs.getString("enabled_usr"))
                 .provisioningScript(rs.getString("upd_AP"))
                 .build());
-    ***REMOVED***
+    }
 
     public String checkSourceId(String sourceId) {
         SqlParameterSource params = new MapSqlParameterSource()
@@ -395,14 +395,14 @@ public class JdbcQueryService {
 
         List<String> query = jdbcTemplate.query(CHECK_SOURCE_ID_QUERY, params, (rs, rowNum) -> rs.getString(1));
         return query.get(0);
-    ***REMOVED***
+    }
 
     public List<OimUserDto> findAllUnprocessedRequests() {
         return jdbcTemplate.query(OMNI_FIND_ALL_UNPROCESSED_REQUESTS_QUERY, (rs, rowNum) -> {
             String endDate = null;
             if (rs.getDate("REBRANCHINGENDDATE") != null && !rs.getDate("REBRANCHINGENDDATE").equals("")) {
                 endDate = new SimpleDateFormat("yyyy-MM-dd").format(rs.getDate("REBRANCHINGENDDATE"));
-            ***REMOVED***
+            }
             return OimUserDto.builder()
                     .objectId(rs.getString("OBJECT_ID"))
                     .empNumber(rs.getString("EMP_NO"))
@@ -413,8 +413,8 @@ public class JdbcQueryService {
                     .isPickupSent(rs.getBoolean("IS_PICKUP_SENT"))
                     .isClosureSent(rs.getBoolean("IS_CLOSURE_SENT"))
                     .build();
-        ***REMOVED***);
-    ***REMOVED***
+        });
+    }
 
     public List<OimUserDto> findAllUnprocessedBlockRequests() {
         return jdbcTemplate.query(OMNI_FIND_ALL_BLOCK_UNPROCESSED_REQUESTS_QUERY, (rs, rowNum) -> OimUserDto.builder()
@@ -424,7 +424,7 @@ public class JdbcQueryService {
                 .isPickupSent(rs.getBoolean("IS_PICKUP_SENT"))
                 .isClosureSent(rs.getBoolean("IS_CLOSURE_SENT"))
                 .build());
-    ***REMOVED***
+    }
 
     public List<OimUserDto> findAllUnprocessedAttachmentsRequests() {
         return jdbcTemplate.query(OMNI_FIND_ALL_BLOCK_ATTACHMENT_QUERY, (rs, rowNum) -> OimUserDto.builder()
@@ -435,7 +435,7 @@ public class JdbcQueryService {
                 .isClosureSent(rs.getBoolean("IS_CLOSURE_SENT"))
                 .id(rs.getLong("ID"))
                 .build());
-    ***REMOVED***
+    }
 
     public List<OimUserDto> findUsersToProcess(LocalDateTime date, String objectId) {
         SqlParameterSource namedParameters = new MapSqlParameterSource()
@@ -447,7 +447,7 @@ public class JdbcQueryService {
                 .action(rs.getString("ACTION"))
                 .sourceId(rs.getString("SOURCE_ID"))
                 .build());
-    ***REMOVED***
+    }
 
     public List<OimUserDto> findAttachment(LocalDateTime date, String objectId) {
         SqlParameterSource namedParameters = new MapSqlParameterSource()
@@ -458,7 +458,7 @@ public class JdbcQueryService {
                 .objectId(rs.getString("OBJECT_ID"))
                 .action(rs.getString("ACTION"))
                 .build());
-    ***REMOVED***
+    }
 
     public List<OimUserDto> findAttachmentToSave(String objectId) {
         SqlParameterSource namedParameters = new MapSqlParameterSource()
@@ -469,7 +469,7 @@ public class JdbcQueryService {
                 .objectId(rs.getString("OBJECT_ID"))
                 .id(rs.getLong("attachment_id"))
                 .build());
-    ***REMOVED***
+    }
 
     public List<Long> findOimUserByEmpNumber(String empNumber) {
         SqlParameterSource namedParameters = new MapSqlParameterSource()
@@ -477,13 +477,13 @@ public class JdbcQueryService {
 
         return jdbcTemplate.query(OIM_FIND_USER_BY_EMP_NUMBER_QUERY, namedParameters, (rs, rowNum) ->
                 rs.getLong("USR_KEY"));
-    ***REMOVED***
+    }
 
     public Integer updateOimUser(OimUserDto oimUserDto) {
         Date endDate = Date.valueOf(LocalDate.of(2999, 12, 31));
         if (oimUserDto.getEndDate() != null && !oimUserDto.getEndDate().equals("")) {
             endDate = Date.valueOf(Date.valueOf(oimUserDto.getEndDate()).toLocalDate().plusDays(1));
-        ***REMOVED***
+        }
         SqlParameterSource namedParametersForUpdate = new MapSqlParameterSource()
                 .addValue("empNumber", oimUserDto.getEmpNumber())
                 .addValue("objectId", oimUserDto.getObjectId())
@@ -492,14 +492,14 @@ public class JdbcQueryService {
                 .addValue("startDate", java.sql.Date.valueOf(oimUserDto.getStartDate()))
                 .addValue("endDate", endDate);
         return jdbcTemplate.execute(OIM_UPDATE_USER_BY_EMP_NUMBER_QUERY, namedParametersForUpdate, PreparedStatement::executeUpdate);
-    ***REMOVED***
+    }
 
     public Integer updateAttachments(Long id, String attachment) {
         SqlParameterSource namedParametersForUpdate = new MapSqlParameterSource()
                 .addValue("id", id)
                 .addValue("attachment", attachment);
         return jdbcTemplate.execute(OMNI_UPDATE_ATTACHMENT_QUERY, namedParametersForUpdate, PreparedStatement::executeUpdate);
-    ***REMOVED***
+    }
 
     public List<OimUserDto> findOimUnprocessedUsers() {
         return jdbcTemplate.query(OIM_FIND_UNPROCESSED_USERS_QUERY, (rs, rowNum) -> OimUserDto.builder()
@@ -507,7 +507,7 @@ public class JdbcQueryService {
                 .empNumber(rs.getString("USR_EMP_NO"))
                 .objectId(rs.getString("USR_UDF_OBJECTID"))
                 .build());
-    ***REMOVED***
+    }
 
     public List<OimUserDto> findOmniUnprocessedRequests(String empNumber, String objectId) {
         SqlParameterSource namedParameters = new MapSqlParameterSource()
@@ -524,7 +524,7 @@ public class JdbcQueryService {
                 .isPickupSent(rs.getBoolean("IS_PICKUP_SENT"))
                 .isClosureSent(rs.getBoolean("IS_CLOSURE_SENT"))
                 .build());
-    ***REMOVED***
+    }
 
     public List<OimUserDto> findOimUsersToClean() {
         SqlParameterSource namedParameters = new MapSqlParameterSource()
@@ -534,7 +534,7 @@ public class JdbcQueryService {
                 .usrKey(rs.getLong("USR_KEY"))
                 .empNumber(rs.getString("USR_EMP_NO"))
                 .build());
-    ***REMOVED***
+    }
 
     public Integer updateOimUserByUsrKey(Long usrKey) {
         SqlParameterSource namedParametersForUpdate = new MapSqlParameterSource()
@@ -547,12 +547,12 @@ public class JdbcQueryService {
                 "USR_UDF_REBRANCHINGENDDATE = null " +
                 "WHERE USR_KEY = :usrKey", namedParametersForUpdate, PreparedStatement::executeUpdate
         );
-    ***REMOVED***
+    }
 
     private String convertParamsMapToQueryData(Map<String, String> params) {
         return params.entrySet().stream()
                 .map(entry -> entry.getKey() + " = " + entry.getValue())
                 .collect(Collectors.joining(", "));
-    ***REMOVED***
+    }
 
-***REMOVED***
+}

@@ -20,10 +20,10 @@ public class PowerShellLocal implements PowerShellExecutor {
     public List<String> execute(String action, List<ProcessedUser> users) {
         if (action.equals(ActionType.DISABLE_USER.name()) || action.equals(ActionType.DISABLE_REGION.name()) || action.equals(ActionType.DISABLE_BY_FILE.name())) {
             users.forEach(s -> log.info("User " + s.getAdLogin() + " was blocked"));
-        ***REMOVED***
+        }
         if (action.equals(ActionType.ENABLE_USER.name()) || action.equals(ActionType.ENABLE_REGION.name()) || action.equals(ActionType.ENABLE_BY_FILE.name())) {
             users.forEach(s -> log.info("User " + s.getAdLogin() + " was enabled"));
-        ***REMOVED***
+        }
         return new ArrayList<>();
-    ***REMOVED***
-***REMOVED***
+    }
+}

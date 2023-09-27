@@ -24,7 +24,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OmnitrackerService {
 
-    @Value("${spring.profiles.active***REMOVED***")
+    @Value("${spring.profiles.active}")
     private String profile;
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
@@ -36,14 +36,14 @@ public class OmnitrackerService {
     public void saveOmniBlockRequest(OmniTrackerRequest request) {
         OmniRequestProcessor processor = getProcessor(request);
         processor.process(request);
-    ***REMOVED***
+    }
 
     public void saveOmniAttachmentRequest(OmniTrackerAttachmentInfoRequest request) {
         if (request.getAdditionalInfo() != null && request.getAdditionalInfo().getIsClosed() != null && request.getAdditionalInfo().getIsClosed()) {
             jdbcQueryService.updateBlockRequest(request.getObjectID());
             jdbcQueryService.updateRebranchRequest(request.getObjectID()); // todo probably don't need 2 queries (use some param from request)
             return;
-        ***REMOVED***
+        }
         String action = jdbcQueryService.getAttachmentAction(request.getObjectID());
         if (action != null && (action.equals(ActionType.ENABLE_BY_FILE.name()) || action.equals(ActionType.DISABLE_BY_FILE.name()))) {
             if (request != null && request.getAttachments() != null) {
@@ -61,34 +61,34 @@ public class OmnitrackerService {
                         );
                         if (execute != 0) {
                             log.info("Attachment data for request " + request.getObjectID() + " was saved.");
-                        ***REMOVED***
-                    ***REMOVED***);
-                ***REMOVED*** catch (Exception e) {
+                        }
+                    });
+                } catch (Exception e) {
                     log.error("Can't save attachment for objectId: " + request.getObjectID(), e.getMessage());
                     closeRequest(request.getObjectID(), "Помилка під час збереження вкладення.");
-                ***REMOVED***
-            ***REMOVED***
-        ***REMOVED***
-    ***REMOVED***
+                }
+            }
+        }
+    }
 
     private void closeRequest(String objectId, String reason) {
         omnitrackerApiService.callOmniTrackerPickupService(null, objectId);
         omnitrackerApiService.callOmniTrackerClosureService(null, objectId, ResponseCodeEnum.SC_CC_REJECTED, "Відхилено. " + reason, "");
         jdbcQueryService.updateOmniBlockRequestQuery(objectId, Collections.singletonMap("IS_PROCESSED", "1"));
-    ***REMOVED***
+    }
 
     private OmniRequestProcessor getProcessor(OmniTrackerRequest request) {
         String actionName;
         if (profile.equals("prod")) {
             actionName = ActionType.findActionByServiceTypeIdProd(request.getServiceTypeID());
-        ***REMOVED*** else {
+        } else {
             actionName = ActionType.findActionByServiceTypeIdTest(request.getServiceTypeID());
-        ***REMOVED***
+        }
         request.setServiceTypeID(actionName); // todo very bad solution!
         return omniRequestProcessors.stream()
                 .filter(omniRequestProcessor -> omniRequestProcessor.getActions().contains(actionName))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Can't find any processors"));
-    ***REMOVED***
+    }
 
-***REMOVED***
+}

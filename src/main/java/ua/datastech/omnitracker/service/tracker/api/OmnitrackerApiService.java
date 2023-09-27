@@ -8,4 +8,4 @@ public interface OmnitrackerApiService {
     void callOmniTrackerPickupService(String empNumber, String objectId);
     String callOmniTrackerGetAttachmentService(Long oid, String objectId);
 
-***REMOVED***
+}

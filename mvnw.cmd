@@ -46,8 +46,8 @@ if "%HOME%" == "" (set "HOME=%HOMEDRIVE%%HOMEPATH%")
 @REM Execute a user defined script before this one
 if not "%MAVEN_SKIP_RC%" == "" goto skipRcPre
 @REM check for pre script, once with legacy .bat ending and once with .cmd ending
-if exist "%USERPROFILE%***REMOVED***mavenrc_pre.bat" call "%USERPROFILE%***REMOVED***mavenrc_pre.bat" %*
-if exist "%USERPROFILE%***REMOVED***mavenrc_pre.cmd" call "%USERPROFILE%***REMOVED***mavenrc_pre.cmd" %*
+if exist "%USERPROFILE%\mavenrc_pre.bat" call "%USERPROFILE%\mavenrc_pre.bat" %*
+if exist "%USERPROFILE%\mavenrc_pre.cmd" call "%USERPROFILE%\mavenrc_pre.cmd" %*
 :skipRcPre
 
 @setlocal
@@ -68,7 +68,7 @@ echo.
 goto error
 
 :OkJHome
-if exist "%JAVA_HOME%***REMOVED***bin***REMOVED***java.exe" goto init
+if exist "%JAVA_HOME%\bin\java.exe" goto init
 
 echo.
 echo Error: JAVA_HOME is set to an invalid directory. >&2
@@ -91,7 +91,7 @@ IF NOT "%MAVEN_PROJECTBASEDIR%"=="" goto endDetectBaseDir
 set EXEC_DIR=%CD%
 set WDIR=%EXEC_DIR%
 :findBaseDir
-IF EXIST "%WDIR%"***REMOVED***.mvn goto baseDirFound
+IF EXIST "%WDIR%"\.mvn goto baseDirFound
 cd ..
 IF "%WDIR%"=="%CD%" goto baseDirNotFound
 set WDIR=%CD%
@@ -108,21 +108,21 @@ cd "%EXEC_DIR%"
 
 :endDetectBaseDir
 
-IF NOT EXIST "%MAVEN_PROJECTBASEDIR%***REMOVED***.mvn***REMOVED***jvm.config" goto endReadAdditionalConfig
+IF NOT EXIST "%MAVEN_PROJECTBASEDIR%\.mvn\jvm.config" goto endReadAdditionalConfig
 
 @setlocal EnableExtensions EnableDelayedExpansion
-for /F "usebackq delims=" %%a in ("%MAVEN_PROJECTBASEDIR%***REMOVED***.mvn***REMOVED***jvm.config") do set JVM_CONFIG_MAVEN_PROPS=!JVM_CONFIG_MAVEN_PROPS! %%a
+for /F "usebackq delims=" %%a in ("%MAVEN_PROJECTBASEDIR%\.mvn\jvm.config") do set JVM_CONFIG_MAVEN_PROPS=!JVM_CONFIG_MAVEN_PROPS! %%a
 @endlocal & set JVM_CONFIG_MAVEN_PROPS=%JVM_CONFIG_MAVEN_PROPS%
 
 :endReadAdditionalConfig
 
-SET MAVEN_JAVA_EXE="%JAVA_HOME%***REMOVED***bin***REMOVED***java.exe"
-set WRAPPER_JAR="%MAVEN_PROJECTBASEDIR%***REMOVED***.mvn***REMOVED***wrapper***REMOVED***maven-wrapper.jar"
+SET MAVEN_JAVA_EXE="%JAVA_HOME%\bin\java.exe"
+set WRAPPER_JAR="%MAVEN_PROJECTBASEDIR%\.mvn\wrapper\maven-wrapper.jar"
 set WRAPPER_LAUNCHER=org.apache.maven.wrapper.MavenWrapperMain
 
 set DOWNLOAD_URL="https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.1.0/maven-wrapper-3.1.0.jar"
 
-FOR /F "usebackq tokens=1,2 delims==" %%A IN ("%MAVEN_PROJECTBASEDIR%***REMOVED***.mvn***REMOVED***wrapper***REMOVED***maven-wrapper.properties") DO (
+FOR /F "usebackq tokens=1,2 delims==" %%A IN ("%MAVEN_PROJECTBASEDIR%\.mvn\wrapper\maven-wrapper.properties") DO (
     IF "%%A"=="wrapperUrl" SET DOWNLOAD_URL=%%B
 )
 
@@ -145,9 +145,9 @@ if exist %WRAPPER_JAR% (
 		"$webclient = new-object System.Net.WebClient;"^
 		"if (-not ([string]::IsNullOrEmpty('%MVNW_USERNAME%') -and [string]::IsNullOrEmpty('%MVNW_PASSWORD%'))) {"^
 		"$webclient.Credentials = new-object System.Net.NetworkCredential('%MVNW_USERNAME%', '%MVNW_PASSWORD%');"^
-		"***REMOVED***"^
+		"}"^
 		"[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; $webclient.DownloadFile('%DOWNLOAD_URL%', '%WRAPPER_JAR%')"^
-		"***REMOVED***"
+		"}"
     if "%MVNW_VERBOSE%" == "true" (
         echo Finished downloading %WRAPPER_JAR%
     )
@@ -176,8 +176,8 @@ set ERROR_CODE=1
 
 if not "%MAVEN_SKIP_RC%"=="" goto skipRcPost
 @REM check for post script, once with legacy .bat ending and once with .cmd ending
-if exist "%USERPROFILE%***REMOVED***mavenrc_post.bat" call "%USERPROFILE%***REMOVED***mavenrc_post.bat"
-if exist "%USERPROFILE%***REMOVED***mavenrc_post.cmd" call "%USERPROFILE%***REMOVED***mavenrc_post.cmd"
+if exist "%USERPROFILE%\mavenrc_post.bat" call "%USERPROFILE%\mavenrc_post.bat"
+if exist "%USERPROFILE%\mavenrc_post.cmd" call "%USERPROFILE%\mavenrc_post.cmd"
 :skipRcPost
 
 @REM pause the script if MAVEN_BATCH_PAUSE is set to 'on'

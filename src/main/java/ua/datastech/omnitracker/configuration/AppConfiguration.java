@@ -17,13 +17,13 @@ public class AppConfiguration {
     @Bean
     public BasicAuthenticationEntryPoint basicAuthenticationEntryPoint() {
         return new AppBasicAuthenticationEntryPoint();
-    ***REMOVED***
+    }
 
     @Bean
     public RestTemplate restTemplate(RestTemplateBuilder builder) {
         RestTemplate restTemplate = builder.build();
         restTemplate.setMessageConverters(Collections.singletonList(new MappingJackson2HttpMessageConverter()));
         return restTemplate;
-    ***REMOVED***
+    }
 
-***REMOVED***
+}

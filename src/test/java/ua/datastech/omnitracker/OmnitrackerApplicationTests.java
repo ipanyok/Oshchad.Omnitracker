@@ -8,6 +8,6 @@ class OmnitrackerApplicationTests {
 
 	@Test
 	void contextLoads() {
-	***REMOVED***
+	}
 
-***REMOVED***
+}

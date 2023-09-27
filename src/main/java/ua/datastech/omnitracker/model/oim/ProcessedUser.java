@@ -11,4 +11,4 @@ public class ProcessedUser {
     private String processOimUserScript;
     private String provisioningScript;
 
-***REMOVED***
+}

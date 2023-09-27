@@ -30,4 +30,4 @@ public class AdditionalInfo {
 
     @JsonProperty("isClosed")
     private Boolean isClosed;
-***REMOVED***
+}

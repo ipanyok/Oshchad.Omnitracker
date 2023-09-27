@@ -25,7 +25,7 @@ public enum ActionType {
                 .map(actionType -> actionType.name())
                 .findFirst()
                 .orElse(null);
-    ***REMOVED***
+    }
 
     public static String findActionByServiceTypeIdProd(String serviceTypeId) {
         return Arrays.stream(ActionType.values())
@@ -33,6 +33,6 @@ public enum ActionType {
                 .map(actionType -> actionType.name())
                 .findFirst()
                 .orElse(null);
-    ***REMOVED***
+    }
 
-***REMOVED***
+}
