@@ -26,5 +26,6 @@ public class OimUserDto {
     private String fileName;
     private Long fileSize;
     private String attachment;
+    private String changedAt;
 
 }

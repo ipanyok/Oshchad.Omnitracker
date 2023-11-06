@@ -11,9 +11,10 @@ import ua.datastech.omnitracker.service.jdbc.JdbcQueryService;
 import ua.datastech.omnitracker.service.tracker.api.OmnitrackerApiService;
 
 import java.time.LocalDate;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.*;
 
 @Service
 @Slf4j
@@ -25,8 +26,8 @@ public class OmnitrackerJob {
 
     @Async("CustomAsyncOmniExecutor")
     @Scheduled(cron = "0 0/10 * * * ?")
-    public void saveOmniDataToOIM() {
-        List<OimUserDto> omniData = jdbcQueryService.findAllUnprocessedRequests();
+    public void sendOmniDataPickup() {
+        List<OimUserDto> omniData = jdbcQueryService.findAllUnprocessedRequests(false);
         LocalDate currentDate = LocalDate.now();
         omniData.forEach(oimUserDto -> {
             try {
@@ -38,23 +39,6 @@ public class OmnitrackerJob {
                     omnitrackerApiService.callOmniTrackerPickupService(oimUserDto.getEmpNumber(), oimUserDto.getObjectId());
                 }
 
-                List<Long> ids = jdbcQueryService.findOimUserByEmpNumber(oimUserDto.getEmpNumber());
-
-                if (ids.isEmpty()) {
-                    log.info("User [empNumber=" + oimUserDto.getEmpNumber() + "] wasn't found.");
-
-                    jdbcQueryService.updateOmniRequestQuery(oimUserDto.getEmpNumber(), oimUserDto.getObjectId(), Collections.singletonMap("IS_PROCESSED", "1"));
-
-                    if (!oimUserDto.getIsClosureSent()) {
-                        omnitrackerApiService.callOmniTrackerClosureService(oimUserDto.getEmpNumber(), oimUserDto.getObjectId(), ResponseCodeEnum.SC_CC_REJECTED, "Відхилено. Користувач [empNumber=" + oimUserDto.getEmpNumber() + "] не знайдений в системі ОІМ.", "");
-                    }
-                } else {
-                    Integer updateCount = jdbcQueryService.updateOimUser(oimUserDto);
-                    if (updateCount != 0) {
-                        jdbcQueryService.updateOmniRequestQuery(oimUserDto.getEmpNumber(), oimUserDto.getObjectId(), Collections.singletonMap("IS_SAVED", "1"));
-                        log.info("User[empNumber=" + oimUserDto.getEmpNumber() + "] data was saved in OIM");
-                    }
-                }
             } catch (Exception e) {
                 log.error("Can't process " + oimUserDto.getObjectId() + " request", e);
             }
@@ -64,6 +48,7 @@ public class OmnitrackerJob {
     @Async("CustomAsyncOmniExecutor")
     @Scheduled(cron = "0 0/30 * * * ?")
     public void processRebranching() {
+        saveDataToOimUser();
         closeRequestsWithCurrentBranchEqualsTempBranch();
         rebranching();
         backBranch();
@@ -144,6 +129,55 @@ public class OmnitrackerJob {
             isExpired = true;
         }
         return isExpired;
+    }
+
+    private void saveDataToOimUser() {
+        List<OimUserDto> oimUserDtos = filterOnlyLatestRequests(jdbcQueryService.findAllUnprocessedRequests(true));
+        updateOimUser(oimUserDtos);
+    }
+
+    private List<OimUserDto> filterOnlyLatestRequests(List<OimUserDto> omniData) {
+        List<List<OimUserDto>> sameElementsList = omniData.stream()
+                .collect(groupingBy(OimUserDto::getEmpNumber))
+                .entrySet().stream()
+                .filter(entry -> entry.getValue().size() > 1)
+                .map(entry -> entry.getValue())
+                .collect(toList());
+
+        List<OimUserDto> toLeaveList = new ArrayList<>();
+        for (List<OimUserDto> oimUserDtos : sameElementsList) {
+            toLeaveList.add(oimUserDtos.stream()
+                    .max(Comparator.comparing(OimUserDto::getChangedAt)).get());
+        }
+        omniData.removeIf(oimUserDto ->
+                toLeaveList.stream()
+                        .filter(o -> o.getEmpNumber().equals(oimUserDto.getEmpNumber()) && !o.getChangedAt().equals(oimUserDto.getChangedAt()))
+                        .findFirst()
+                        .orElse(null) != null
+        );
+        return omniData;
+    }
+
+    private void updateOimUser(List<OimUserDto> oimUserDtos) {
+        oimUserDtos.forEach(oimUserDto -> {
+            List<Long> ids = jdbcQueryService.findOimUserByEmpNumber(oimUserDto.getEmpNumber());
+
+            if (ids.isEmpty()) {
+                log.info("User [empNumber=" + oimUserDto.getEmpNumber() + "] wasn't found.");
+
+                jdbcQueryService.updateOmniRequestQuery(oimUserDto.getEmpNumber(), oimUserDto.getObjectId(), Collections.singletonMap("IS_PROCESSED", "1"));
+
+                if (!oimUserDto.getIsClosureSent()) {
+                    omnitrackerApiService.callOmniTrackerClosureService(oimUserDto.getEmpNumber(), oimUserDto.getObjectId(), ResponseCodeEnum.SC_CC_REJECTED, "Відхилено. Користувач [empNumber=" + oimUserDto.getEmpNumber() + "] не знайдений в системі ОІМ.", "");
+                }
+            } else {
+                Integer updateCount = jdbcQueryService.updateOimUser(oimUserDto);
+                if (updateCount != 0) {
+                    jdbcQueryService.updateOmniRequestQuery(oimUserDto.getEmpNumber(), oimUserDto.getObjectId(), Collections.singletonMap("IS_SAVED", "1"));
+                    log.info("User[empNumber=" + oimUserDto.getEmpNumber() + "] data was saved in OIM");
+                }
+            }
+        });
     }
 
 }

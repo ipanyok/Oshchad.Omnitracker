@@ -35,6 +35,11 @@ public class JdbcQueryService {
 
     private final static String OMNI_FIND_ALL_UNPROCESSED_REQUESTS_QUERY = "select * from OMNI_REQUEST where IS_SAVED = 0 AND IS_PROCESSED = 0 AND IS_NEED_TO_CLOSE = 0";
 
+    private final static String OMNI_FIND_ALL_TODAYS_UNPROCESSED_REQUESTS_QUERY = "select * " +
+            "from OMNI_REQUEST " +
+            "where IS_SAVED = 0 AND IS_PROCESSED = 0 AND IS_NEED_TO_CLOSE = 0 AND IS_PICKUP_SENT = 1 " +
+            "AND REBRANCHINGSTARTDATE = to_date(sysdate, 'dd.mm.yyyy')";
+
     private final static String OMNI_FIND_ALL_BLOCK_UNPROCESSED_REQUESTS_QUERY = "select * " +
             "from OMNI_BLOCK_REQUEST " +
             "WHERE IS_PROCESSED = 0 AND IS_NEED_TO_CLOSE = 0 " +
@@ -206,7 +211,7 @@ public class JdbcQueryService {
     private static final String OMNI_CHECK_CURRENT_BRANCH_QUERY = "select OMNI_REQUEST.EMP_NO EMP_NO, OMNI_REQUEST.OBJECT_ID OBJECT_ID, OMNI_REQUEST.TEMPBRANCH TEMP_BRANCH, USR.USR_UDF_CURRENTBRANCH2 CURRENT_BRANCH, OMNI_REQUEST.IS_CLOSURE_SENT IS_CLOSURE_SENT " +
             "from usr, OMNI_REQUEST " +
             "where usr.USR_EMP_NO = OMNI_REQUEST.EMP_NO " +
-            "and OMNI_REQUEST.REBRANCHINGSTARTDATE = sysdate " +
+            "and OMNI_REQUEST.REBRANCHINGSTARTDATE = to_date(sysdate, 'dd.mm.yyyy') " +
             "and OMNI_REQUEST.IS_PROCESSED = 0 and OMNI_REQUEST.IS_SAVED = 1 AND OMNI_REQUEST.IS_NEED_TO_CLOSE = 0";
 
     private static final String OMNI_GET_ALL_BLOCK_TO_CLOSE_QUERY = "select OBJECT_ID, IS_PICKUP_SENT from OMNI_BLOCK_REQUEST where IS_NEED_TO_CLOSE = 1 AND IS_PROCESSED = 0";
@@ -397,8 +402,14 @@ public class JdbcQueryService {
         return query.get(0);
     }
 
-    public List<OimUserDto> findAllUnprocessedRequests() {
-        return jdbcTemplate.query(OMNI_FIND_ALL_UNPROCESSED_REQUESTS_QUERY, (rs, rowNum) -> {
+    public List<OimUserDto> findAllUnprocessedRequests(boolean forToday) {
+        String query;
+        if (forToday) {
+            query = OMNI_FIND_ALL_TODAYS_UNPROCESSED_REQUESTS_QUERY;
+        } else {
+            query = OMNI_FIND_ALL_UNPROCESSED_REQUESTS_QUERY;
+        }
+        return jdbcTemplate.query(query, (rs, rowNum) -> {
             String endDate = null;
             if (rs.getDate("REBRANCHINGENDDATE") != null && !rs.getDate("REBRANCHINGENDDATE").equals("")) {
                 endDate = new SimpleDateFormat("yyyy-MM-dd").format(rs.getDate("REBRANCHINGENDDATE"));
@@ -410,6 +421,7 @@ public class JdbcQueryService {
                     .tmpBranch(rs.getString("TEMPBRANCH"))
                     .startDate(new SimpleDateFormat("yyyy-MM-dd").format(rs.getDate("REBRANCHINGSTARTDATE")))
                     .endDate(endDate)
+                    .changedAt(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(rs.getTimestamp("CHANGED_AT")))
                     .isPickupSent(rs.getBoolean("IS_PICKUP_SENT"))
                     .isClosureSent(rs.getBoolean("IS_CLOSURE_SENT"))
                     .build();
