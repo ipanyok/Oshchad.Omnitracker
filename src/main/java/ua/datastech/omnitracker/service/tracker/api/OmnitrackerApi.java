@@ -109,7 +109,7 @@ public class OmnitrackerApi implements OmnitrackerApiService {
         }
         Map<String, String> params = Stream.of(new String[][] {
                 { "IS_CLOSURE_SENT", "1" },
-                { "CLOSE_REASON", "'" + Transliterator.getInstance(transliterator).transliterate(solution) + "'"},
+                { "CLOSE_REASON", "'" + Transliterator.getInstance(transliterator).transliterate(solution).replaceAll("'", "") + "'"},
         }).collect(Collectors.toMap(data -> data[0], data -> data[1]));
         if (empNumber != null) {
             jdbcQueryService.updateOmniRequestQuery(empNumber, objectId, params);
