@@ -34,13 +34,15 @@ public class OmnitrackerBlockJob {
     private final JdbcQueryService jdbcQueryService;
     private final PowerShellExecutor powerShellExecutor;
 
+    private static final long SECONDS_TO_CORRECT_EARLY_SCHEDULER_RUN = 5;
+
     // todo think about transactions and try/catch sections (when send closure)
 //    @Transactional
     @Async("CustomAsyncOmniExecutor")
     @Scheduled(cron = "0 0/10 * * * ?")
     public void processData() {
         List<OimUserDto> omniData = jdbcQueryService.findAllUnprocessedBlockRequests();
-        LocalDateTime currentDate = LocalDateTime.now();
+        LocalDateTime currentDate = LocalDateTime.now().plusSeconds(SECONDS_TO_CORRECT_EARLY_SCHEDULER_RUN);
         omniData.forEach(oimUserDto -> {
             try {
                 if (checkIfDateExpired(oimUserDto, currentDate)) {
@@ -115,7 +117,7 @@ public class OmnitrackerBlockJob {
     @Scheduled(cron = "0 0/10 * * * ?")
     public void processAttachmentsData() {
         List<OimUserDto> omniData = jdbcQueryService.findAllUnprocessedAttachmentsRequests();
-        LocalDateTime currentDate = LocalDateTime.now();
+        LocalDateTime currentDate = LocalDateTime.now().plusSeconds(SECONDS_TO_CORRECT_EARLY_SCHEDULER_RUN);
         omniData.forEach(oimUserDto -> {
             try {
                 if (checkIfDateExpired(oimUserDto, currentDate)) {
